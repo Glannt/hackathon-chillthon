@@ -3585,3 +3585,97 @@ INFO 2025-06-28 12:11:53,159 Dashboard accessed by user: do1234 (pc 3) at 2025-0
 INFO 2025-06-28 12:11:53,165 No attendance record found for do1234 on 2025-06-28
 INFO 2025-06-28 12:11:53,168 Loading role-based data for do1234 with role: user
 INFO 2025-06-28 12:11:53,168 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:28:42,608 Dashboard accessed by user: do1234 (pc 3) at 2025-06-28 05:28:42.608273+00:00
+INFO 2025-06-28 12:28:42,616 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:28:42,618 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:28:42,618 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:31:37,604 Dashboard accessed by user: do1234 (pc 3) at 2025-06-28 05:31:37.604783+00:00
+INFO 2025-06-28 12:31:37,611 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:31:37,612 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:31:37,613 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:36:38,018 Dashboard accessed by user: do1234 (pc 3) at 2025-06-28 05:36:38.018684+00:00
+INFO 2025-06-28 12:36:38,025 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:36:38,027 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:36:38,027 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:41:38,406 Dashboard accessed by user: do1234 (pc 3) at 2025-06-28 05:41:38.406834+00:00
+INFO 2025-06-28 12:41:38,415 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:41:38,417 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:41:38,418 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:43:19,235 Profile accessed by do1234
+INFO 2025-06-28 12:44:09,844 Dashboard accessed by user: do1234 (pc 3) at 2025-06-28 05:44:09.844868+00:00
+INFO 2025-06-28 12:44:09,851 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:44:09,853 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:44:09,853 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:44:11,326 Profile accessed by do1234
+INFO 2025-06-28 12:44:57,967 Profile accessed by do1234
+INFO 2025-06-28 12:44:58,011 Profile updated by do1234: email tongnguyenthanhdo1@gmail.com -> tongnguyenthanhdo1@gmail.com
+INFO 2025-06-28 12:44:58,022 Profile accessed by do1234
+INFO 2025-06-28 12:45:02,583 Profile accessed by do1234
+INFO 2025-06-28 12:45:02,638 Profile updated by do1234: email tongnguyenthanhdo1@gmail.com -> tongnguyenthanhdo1@gmail.com
+INFO 2025-06-28 12:45:02,650 Profile accessed by do1234
+INFO 2025-06-28 12:45:05,459 Profile accessed by do1234
+INFO 2025-06-28 12:45:08,183 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:45:08.183641+00:00
+INFO 2025-06-28 12:45:08,192 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:45:08,193 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:45:08,194 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:45:42,842 Password change requested by do1234
+INFO 2025-06-28 12:47:13,746 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:47:13.746106+00:00
+INFO 2025-06-28 12:47:13,751 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:47:13,752 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:47:13,753 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:47:15,256 Password change requested by do1234
+INFO 2025-06-28 12:47:36,338 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:47:36.338613+00:00
+INFO 2025-06-28 12:47:36,345 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:47:36,347 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:47:36,347 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:47:38,029 Password change requested by do1234
+INFO 2025-06-28 12:48:06,019 Password change requested by do1234
+INFO 2025-06-28 12:48:09,768 Password change requested by do1234
+INFO 2025-06-28 12:49:45,814 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:49:45.814956+00:00
+INFO 2025-06-28 12:49:45,819 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:49:45,821 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:49:45,822 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:49:48,250 Password change requested by do1234
+INFO 2025-06-28 12:51:27,694 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:51:27.694951+00:00
+INFO 2025-06-28 12:51:27,699 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:51:27,701 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:51:27,701 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:51:29,583 Password change requested by do1234
+INFO 2025-06-28 12:52:26,019 Password change requested by do1234
+INFO 2025-06-28 12:52:28,321 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:52:28.321296+00:00
+INFO 2025-06-28 12:52:28,332 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:52:28,334 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:52:28,334 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:52:29,556 Password change requested by do1234
+INFO 2025-06-28 12:52:33,544 Profile accessed by do1234
+INFO 2025-06-28 12:52:36,169 Password change requested by do1234
+INFO 2025-06-28 12:53:41,041 Password change requested by do1234
+INFO 2025-06-28 12:53:43,619 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:53:43.619163+00:00
+INFO 2025-06-28 12:53:43,626 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:53:43,628 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:53:43,628 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:53:45,052 Password change requested by do1234
+INFO 2025-06-28 12:54:17,973 Password change requested by do1234
+INFO 2025-06-28 12:54:19,897 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:54:19.897308+00:00
+INFO 2025-06-28 12:54:19,902 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:54:19,903 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:54:19,904 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:54:21,276 Password change requested by do1234
+INFO 2025-06-28 12:56:36,864 Dashboard accessed by user: do1234 (pcfdfd 3) at 2025-06-28 05:56:36.864249+00:00
+INFO 2025-06-28 12:56:36,871 No attendance record found for do1234 on 2025-06-28
+INFO 2025-06-28 12:56:36,873 Loading role-based data for do1234 with role: user
+INFO 2025-06-28 12:56:36,873 Dashboard loaded successfully for do1234
+INFO 2025-06-28 12:56:38,127 Password change requested by do1234
+INFO 2025-06-28 12:57:28,869 Password change requested by do1234
+INFO 2025-06-28 12:57:48,581 Password change requested by do1234
+WARNING 2025-06-28 12:57:48,971 Password change failed for do1234: validation errors
+INFO 2025-06-28 12:58:07,041 Password change requested by do1234
+WARNING 2025-06-28 12:58:07,396 Password change failed for do1234: validation errors
+INFO 2025-06-28 12:58:36,423 Password change requested by do1234
+INFO 2025-06-28 12:58:37,203 Password changed successfully for do1234
+INFO 2025-06-28 12:58:37,232 Profile accessed by do1234
+INFO 2025-06-28 12:58:51,089 Password change requested by do1234
+INFO 2025-06-28 12:59:01,981 Password change requested by do1234
+WARNING 2025-06-28 12:59:02,340 Password change failed for do1234: validation errors
+INFO 2025-06-28 12:59:21,867 Password change requested by do1234
+WARNING 2025-06-28 12:59:22,247 Password change failed for do1234: validation errors

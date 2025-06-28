@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add New User - Employee Task Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0"><i class="fas fa-user-plus me-2"></i>Add New User</h1>
+        <p class="text-muted">Create a new user account</p>
+    </div>
+    <div>
+        <a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to User List
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>User Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Account Information -->
+                    <h6 class="text-muted mb-3">Account Details</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   required placeholder="Enter username">
+                            <div class="form-text">Unique identifier for login</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   required placeholder="Enter email address">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   required placeholder="Enter password">
+                            <div class="form-text">Minimum 8 characters</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                {% for value, label in role_choices %}
+                                <option value="{{ value }}" {% if value == 'user' %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Personal Information -->
+                    <h6 class="text-muted mb-3">Personal Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   placeholder="Enter first name">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   placeholder="Enter last name">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="department" class="form-label">Department</label>
+                            <input type="text" class="form-control" id="department" name="department" 
+                                   placeholder="e.g. Engineering, Marketing">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="position" class="form-label">Position</label>
+                            <input type="text" class="form-control" id="position" name="position" 
+                                   placeholder="e.g. Software Developer, Designer">
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   placeholder="Enter phone number">
+                        </div>
+                    </div>
+
+                    <!-- Role Information -->
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Role Permissions</h6>
+                        <ul class="mb-0">
+                            <li><strong>Admin:</strong> Full system access, can manage all users and settings</li>
+                            <li><strong>Manager:</strong> Can manage team members, create tasks, view reports</li>
+                            <li><strong>User:</strong> Can view assigned tasks, update progress, manage attendance</li>
+                        </ul>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Create User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Real-time username validation
+    const usernameField = document.getElementById('username');
+    usernameField.addEventListener('input', function() {
+        const value = this.value;
+        const pattern = /^[a-zA-Z0-9_]+$/;
+        
+        if (value && !pattern.test(value)) {
+            this.setCustomValidity('Username can only contain letters, numbers, and underscores');
+        } else if (value && value.length < 3) {
+            this.setCustomValidity('Username must be at least 3 characters long');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Password strength indicator
+    const passwordField = document.getElementById('password');
+    passwordField.addEventListener('input', function() {
+        const value = this.value;
+        let strength = 0;
+        
+        if (value.length >= 8) strength++;
+        if (/[a-z]/.test(value)) strength++;
+        if (/[A-Z]/.test(value)) strength++;
+        if (/[0-9]/.test(value)) strength++;
+        if (/[^A-Za-z0-9]/.test(value)) strength++;
+        
+        // Remove existing strength indicator
+        const existingIndicator = this.parentNode.querySelector('.password-strength');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        
+        if (value.length > 0) {
+            const indicator = document.createElement('div');
+            indicator.className = 'password-strength form-text';
+            
+            if (strength < 2) {
+                indicator.innerHTML = '<span class="text-danger">Weak password</span>';
+            } else if (strength < 4) {
+                indicator.innerHTML = '<span class="text-warning">Medium password</span>';
+            } else {
+                indicator.innerHTML = '<span class="text-success">Strong password</span>';
+            }
+            
+            this.parentNode.appendChild(indicator);
+        }
+    });
+
+    // Role description update
+    const roleField = document.getElementById('role');
+    roleField.addEventListener('change', function() {
+        const roleDescriptions = {
+            'admin': 'Full system access, can manage all users and settings',
+            'manager': 'Can manage team members, create tasks, view reports',
+            'user': 'Can view assigned tasks, update progress, manage attendance'
+        };
+        
+        // Update role description if needed
+        console.log('Role selected:', this.value);
+    });
+});
+</script>
+{% endblock %} 

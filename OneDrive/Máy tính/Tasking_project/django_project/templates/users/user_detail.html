@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ viewed_user.get_full_name|default:viewed_user.username }} - User Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-user me-2"></i>{{ viewed_user.get_full_name|default:viewed_user.username }}
+        </h1>
+        <p class="text-muted">User details and activity overview</p>
+    </div>
+    <div>
+        <a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-arrow-left me-2"></i>Back to Users
+        </a>
+        {% if user.userprofile.is_admin %}
+        <div class="btn-group">
+            <a href="{% url 'users:edit_user' viewed_user.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Edit User
+            </a>
+            <button type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'users:reset_password' viewed_user.pk %}">
+                    <i class="fas fa-key me-2"></i>Reset Password
+                </a></li>
+                {% if viewed_user != user %}
+                <li><hr class="dropdown-divider"></li>
+                {% if viewed_user.is_active %}
+                <li><a class="dropdown-item text-danger" href="{% url 'users:delete_user' viewed_user.pk %}">
+                    <i class="fas fa-user-slash me-2"></i>Deactivate User
+                </a></li>
+                {% else %}
+                <li><a class="dropdown-item text-success" href="{% url 'users:reactivate_user' viewed_user.pk %}">
+                    <i class="fas fa-user-check me-2"></i>Reactivate User
+                </a></li>
+                {% endif %}
+                
+                <!-- Hard Delete - Only for non-admin users -->
+                {% if profile.role != 'admin' %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger fw-bold" href="{% url 'users:hard_delete_user' viewed_user.pk %}">
+                    <i class="fas fa-trash-alt me-2"></i>Permanently Delete User
+                </a></li>
+                {% endif %}
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- User Information -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-id-card me-2"></i>User Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-circle fa-5x text-muted"></i>
+                    <h5 class="mt-2">{{ viewed_user.get_full_name|default:viewed_user.username }}</h5>
+                    <p class="text-muted mb-2">@{{ viewed_user.username }}</p>
+                    
+                    <!-- Role Badge -->
+                    {% if profile.role == 'admin' %}
+                        <span class="badge bg-danger fs-6">Admin</span>
+                    {% elif profile.role == 'manager' %}
+                        <span class="badge bg-warning fs-6">Manager</span>
+                    {% else %}
+                        <span class="badge bg-info fs-6">User</span>
+                    {% endif %}
+                    
+                    <!-- Status Badge -->
+                    {% if viewed_user.is_active %}
+                        <span class="badge bg-success fs-6 ms-2">Active</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6 ms-2">Inactive</span>
+                    {% endif %}
+                </div>
+
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong><i class="fas fa-envelope me-2"></i>Email:</strong><br>
+                        <a href="mailto:{{ viewed_user.email }}">{{ viewed_user.email }}</a>
+                    </li>
+                    {% if profile.phone %}
+                    <li class="mb-2">
+                        <strong><i class="fas fa-phone me-2"></i>Phone:</strong><br>
+                        {{ profile.phone }}
+                    </li>
+                    {% endif %}
+                    {% if profile.department %}
+                    <li class="mb-2">
+                        <strong><i class="fas fa-building me-2"></i>Department:</strong><br>
+                        {{ profile.department }}
+                    </li>
+                    {% endif %}
+                    {% if profile.position %}
+                    <li class="mb-2">
+                        <strong><i class="fas fa-briefcase me-2"></i>Position:</strong><br>
+                        {{ profile.position }}
+                    </li>
+                    {% endif %}
+                    {% if profile.hire_date %}
+                    <li class="mb-2">
+                        <strong><i class="fas fa-calendar-plus me-2"></i>Hire Date:</strong><br>
+                        {{ profile.hire_date }}
+                    </li>
+                    {% endif %}
+                    <li class="mb-2">
+                        <strong><i class="fas fa-clock me-2"></i>Last Login:</strong><br>
+                        {% if viewed_user.last_login %}
+                            {{ viewed_user.last_login|timesince }} ago
+                        {% else %}
+                            <span class="text-muted">Never</span>
+                        {% endif %}
+                    </li>
+                    <li class="mb-2">
+                        <strong><i class="fas fa-user-plus me-2"></i>Joined:</strong><br>
+                        {{ viewed_user.date_joined|date:"M d, Y" }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics and Activity -->
+    <div class="col-lg-8">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-tasks fa-2x text-primary mb-2"></i>
+                        <h4>{{ task_stats.total|default:0 }}</h4>
+                        <p class="mb-0 text-muted">Total Tasks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h4>{{ task_stats.completed|default:0 }}</h4>
+                        <p class="mb-0 text-muted">Completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-play-circle fa-2x text-warning mb-2"></i>
+                        <h4>{{ task_stats.in_progress|default:0 }}</h4>
+                        <p class="mb-0 text-muted">In Progress</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
+                        <h4>{{ monthly_attendance|default:0 }}</h4>
+                        <p class="mb-0 text-muted">This Month</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Tasks -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Recent Tasks</h5>
+                <span class="badge bg-primary">{{ recent_tasks|length|default:0 }}</span>
+            </div>
+            <div class="card-body">
+                {% if recent_tasks %}
+                    {% for task in recent_tasks %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div>
+                            <h6 class="mb-1">
+                                <a href="{% url 'tasks:task_detail' task.pk %}" class="text-decoration-none">
+                                    {{ task.title }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">
+                                {% if task.project %}{{ task.project.name }}{% else %}No Project{% endif %}
+                            </small><br>
+                            <small class="text-muted">Created {{ task.created_at|timesince }} ago</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge {{ task.status_badge_class|default:'bg-secondary' }}">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% if task.priority == 'high' %}
+                                <br><small class="text-danger">High Priority</small>
+                            {% elif task.priority == 'urgent' %}
+                                <br><small class="text-danger fw-bold">Urgent</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-tasks fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No tasks assigned yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Attendance -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Attendance</h5>
+                <span class="badge bg-info">{{ recent_attendance|length|default:0 }}</span>
+            </div>
+            <div class="card-body">
+                {% if recent_attendance %}
+                    {% for attendance in recent_attendance %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div>
+                            <h6 class="mb-1">{{ attendance.date|date:"M d, Y" }}</h6>
+                            <small class="text-muted">
+                                {% if attendance.check_in %}
+                                    Check-in: {{ attendance.check_in|time:"H:i" }}
+                                {% endif %}
+                                {% if attendance.check_out %}
+                                    | Check-out: {{ attendance.check_out|time:"H:i" }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge {{ attendance.status_badge_class|default:'bg-secondary' }}">
+                                {{ attendance.get_status_display }}
+                            </span>
+                            {% if attendance.worked_hours %}
+                                <br><small class="text-muted">{{ attendance.worked_hours_display }} hours</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-clock fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No attendance records yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

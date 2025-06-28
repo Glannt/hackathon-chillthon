@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Team Attendance - Employee Task Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-users me-2"></i>Team Attendance
+        </h1>
+        <p class="text-muted">Monitor team attendance and work hours</p>
+    </div>
+    <div>
+        <a href="{% url 'attendance:dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Attendance
+        </a>
+    </div>
+</div>
+
+<!-- Date Selector -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="date" class="form-label">Select Date</label>
+                <input type="date" class="form-control" id="date" name="date" 
+                       value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="department" class="form-label">Department (Optional)</label>
+                <select class="form-select" id="department" name="department">
+                    <option value="">All Departments</option>
+                    <option value="IT">IT</option>
+                    <option value="HR">HR</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Operations">Operations</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>View Team
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Team Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                <h4>{{ user_attendance|length }}</h4>
+                <p class="mb-0 text-muted">Total Team Members</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4>{{ present_count }}</h4>
+                <p class="mb-0 text-muted">Present Today</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                <h4>{{ late_count }}</h4>
+                <p class="mb-0 text-muted">Late Today</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                <h4>{{ absent_count }}</h4>
+                <p class="mb-0 text-muted">Absent Today</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Attendance Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Team Attendance for {{ today|date:"M d, Y" }}
+        </h5>
+        <div>
+            <button class="btn btn-sm btn-outline-primary me-2" onclick="exportTeamAttendance()">
+                <i class="fas fa-download me-1"></i>Export
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="printTeamAttendance()">
+                <i class="fas fa-print me-1"></i>Print
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if user_attendance %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="teamAttendanceTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Hours</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in user_attendance %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3">
+                                        <i class="fas fa-user-circle fa-2x text-muted"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">{{ item.user.get_full_name|default:item.user.username }}</h6>
+                                        <small class="text-muted">@{{ item.user.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if item.user.userprofile.department %}
+                                    <span class="badge bg-info">{{ item.user.userprofile.department }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.user.userprofile.role == 'admin' %}
+                                    <span class="badge bg-danger">Admin</span>
+                                {% elif item.user.userprofile.role == 'manager' %}
+                                    <span class="badge bg-warning">Manager</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.attendance %}
+                                    <span class="badge {{ item.attendance.status_badge_class }}">
+                                        {{ item.attendance.get_status_display }}
+                                    </span>
+                                    {% if item.attendance.is_late %}
+                                        <br><small class="text-warning">Late arrival</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">No Record</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.attendance and item.attendance.check_in %}
+                                    <span class="text-success">{{ item.attendance.check_in|time:"H:i" }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.attendance and item.attendance.check_out %}
+                                    <span class="text-danger">{{ item.attendance.check_out|time:"H:i" }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.attendance and item.attendance.worked_hours %}
+                                    <strong>{{ item.attendance.worked_hours_display }}</strong>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'users:user_detail' item.user.pk %}" 
+                                       class="btn btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'attendance:history' %}?user={{ item.user.pk }}" 
+                                       class="btn btn-outline-info" title="View History">
+                                        <i class="fas fa-history"></i>
+                                    </a>
+                                    {% if user.userprofile.is_admin %}
+                                    <button type="button" class="btn btn-outline-warning" 
+                                            onclick="sendReminder('{{ item.user.username }}')" title="Send Reminder">
+                                        <i class="fas fa-bell"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h5>No team members found</h5>
+                <p class="text-muted">There are no active team members to display</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Department Breakdown -->
+{% if user_attendance %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Attendance by Department
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="departmentChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Attendance Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'users:user_list' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-user-cog me-2"></i>Manage Users
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'attendance:history' %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-history me-2"></i>My History
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-warning w-100" onclick="sendTeamReminder()">
+                            <i class="fas fa-bell me-2"></i>Send Team Reminder
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-success w-100" onclick="generateReport()">
+                            <i class="fas fa-file-alt me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Charts and Actions -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Calculate statistics
+const userAttendance = {{ user_attendance|length }};
+const presentCount = {{ present_count|default:0 }};
+const lateCount = {{ late_count|default:0 }};
+const absentCount = {{ absent_count|default:0 }};
+
+// Department breakdown
+const departmentData = {};
+{% for item in user_attendance %}
+    const dept = '{{ item.user.userprofile.department|default:"Unknown" }}';
+    if (!departmentData[dept]) {
+        departmentData[dept] = { present: 0, late: 0, absent: 0, total: 0 };
+    }
+    departmentData[dept].total++;
+    {% if item.attendance %}
+        {% if item.attendance.status == 'present' %}
+            departmentData[dept].present++;
+        {% elif item.attendance.status == 'late' %}
+            departmentData[dept].late++;
+        {% elif item.attendance.status == 'absent' %}
+            departmentData[dept].absent++;
+        {% endif %}
+    {% else %}
+        departmentData[dept].absent++;
+    {% endif %}
+{% endfor %}
+
+// Create charts if data exists
+if (userAttendance > 0) {
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Late', 'Absent'],
+            datasets: [{
+                data: [presentCount, lateCount, absentCount],
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Department Chart
+    const deptCtx = document.getElementById('departmentChart').getContext('2d');
+    const deptLabels = Object.keys(departmentData);
+    const deptData = deptLabels.map(dept => departmentData[dept].total);
+    
+    new Chart(deptCtx, {
+        type: 'bar',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                label: 'Team Members',
+                data: deptData,
+                backgroundColor: '#007bff',
+                borderColor: '#0056b3',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// Export function
+function exportTeamAttendance() {
+    const table = document.getElementById('teamAttendanceTable');
+    const rows = table.querySelectorAll('tbody tr');
+    
+    let csvContent = "Employee,Department,Role,Status,Check-in,Check-out,Hours\n";
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = [];
+        
+        // Employee name
+        const name = cells[0].querySelector('h6').textContent.trim();
+        rowData.push(`"${name}"`);
+        
+        // Department
+        const dept = cells[1].textContent.trim();
+        rowData.push(`"${dept}"`);
+        
+        // Role
+        const role = cells[2].textContent.trim();
+        rowData.push(`"${role}"`);
+        
+        // Status
+        const status = cells[3].textContent.trim();
+        rowData.push(`"${status}"`);
+        
+        // Check-in
+        const checkIn = cells[4].textContent.trim();
+        rowData.push(`"${checkIn}"`);
+        
+        // Check-out
+        const checkOut = cells[5].textContent.trim();
+        rowData.push(`"${checkOut}"`);
+        
+        // Hours
+        const hours = cells[6].textContent.trim();
+        rowData.push(`"${hours}"`);
+        
+        csvContent += rowData.join(',') + '\n';
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `team_attendance_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Print function
+function printTeamAttendance() {
+    window.print();
+}
+
+// Send reminder function
+function sendReminder(username) {
+    if (confirm(`Send attendance reminder to ${username}?`)) {
+        // Here you would typically make an AJAX call to send the reminder
+        alert(`Reminder sent to ${username}`);
+    }
+}
+
+// Send team reminder function
+function sendTeamReminder() {
+    if (confirm('Send attendance reminder to all team members?')) {
+        // Here you would typically make an AJAX call to send team reminders
+        alert('Team reminders sent successfully');
+    }
+}
+
+// Generate report function
+function generateReport() {
+    if (confirm('Generate attendance report for today?')) {
+        // Here you would typically make an AJAX call to generate a report
+        alert('Report generated successfully');
+    }
+}
+
+// Add print styles
+const printStyles = `
+@media print {
+    .btn, .card-header, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .card-body {
+        padding: 0 !important;
+    }
+    
+    .table {
+        font-size: 10px !important;
+    }
+    
+    .table th, .table td {
+        padding: 2px !important;
+    }
+    
+    canvas {
+        display: none !important;
+    }
+}
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = printStyles;
+document.head.appendChild(styleSheet);
+</script>
+{% endblock %} 

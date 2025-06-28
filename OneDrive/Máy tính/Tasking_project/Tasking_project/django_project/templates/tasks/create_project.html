@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create New Project{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-plus-circle text-primary me-2"></i>
+                        Create New Project
+                    </h1>
+                    <p class="text-muted">Create a new project to organize tasks and track progress</p>
+                </div>
+                <div>
+                    <a href="{% url 'tasks:project_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Back to Projects
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project Creation Form -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-xl-6">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-project-diagram me-2"></i>
+                                Project Information
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form method="post" id="createProjectForm">
+                                {% csrf_token %}
+                                
+                                <!-- Project Name -->
+                                <div class="mb-4">
+                                    <label for="name" class="form-label fw-bold">
+                                        <i class="fas fa-tag text-primary me-1"></i>
+                                        Project Name *
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="name" 
+                                           name="name" 
+                                           required 
+                                           placeholder="Enter project name"
+                                           maxlength="200"
+                                           autofocus>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Choose a clear, descriptive name for your project
+                                    </div>
+                                </div>
+
+                                <!-- Project Description -->
+                                <div class="mb-4">
+                                    <label for="description" class="form-label fw-bold">
+                                        <i class="fas fa-align-left text-primary me-1"></i>
+                                        Project Description
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="description" 
+                                              name="description" 
+                                              rows="6" 
+                                              placeholder="Describe the project goals, scope, and key deliverables..."
+                                              maxlength="1000"></textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Provide detailed information about the project objectives and requirements
+                                    </div>
+                                    <div class="text-end mt-1">
+                                        <small class="text-muted">
+                                            <span id="charCount">0</span>/1000 characters
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Project Settings -->
+                                <div class="mb-4">
+                                    <h6 class="fw-bold text-primary mb-3">
+                                        <i class="fas fa-cogs me-1"></i>
+                                        Project Settings
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                                                <label class="form-check-label" for="is_active">
+                                                    <i class="fas fa-toggle-on text-success me-1"></i>
+                                                    Active Project
+                                                </label>
+                                            </div>
+                                            <div class="form-text">
+                                                Active projects can have tasks assigned to them
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="text-muted">
+                                                <small>
+                                                    <i class="fas fa-user me-1"></i>
+                                                    Created by: {{ request.user.get_full_name|default:request.user.username }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                    <div>
+                                        <a href="{% url 'tasks:project_list' %}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-times me-1"></i>
+                                            Cancel
+                                        </a>
+                                    </div>
+                                    <div>
+                                        <button type="button" class="btn btn-outline-primary me-2" onclick="previewProject()">
+                                            <i class="fas fa-eye me-1"></i>
+                                            Preview
+                                        </button>
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-save me-1"></i>
+                                            Create Project
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Project Guidelines -->
+                    <div class="card mt-4 border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="fw-bold text-primary mb-3">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Project Creation Guidelines
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Use clear, descriptive project names
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Include project objectives and scope
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Define key deliverables and milestones
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled mb-0">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Specify team roles and responsibilities
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Set realistic timelines and deadlines
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Consider resource requirements
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>
+                    Project Preview
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent">
+                    <!-- Preview content will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="submitForm()">
+                    <i class="fas fa-save me-1"></i>
+                    Create Project
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Character counter for description
+document.getElementById('description').addEventListener('input', function() {
+    const charCount = this.value.length;
+    document.getElementById('charCount').textContent = charCount;
+    
+    if (charCount > 900) {
+        document.getElementById('charCount').classList.add('text-warning');
+    } else {
+        document.getElementById('charCount').classList.remove('text-warning');
+    }
+});
+
+// Form validation
+document.getElementById('createProjectForm').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const description = document.getElementById('description').value.trim();
+    
+    if (!name) {
+        e.preventDefault();
+        showAlert('Please enter a project name.', 'warning');
+        document.getElementById('name').focus();
+        return false;
+    }
+    
+    if (name.length < 3) {
+        e.preventDefault();
+        showAlert('Project name must be at least 3 characters long.', 'warning');
+        document.getElementById('name').focus();
+        return false;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Creating...';
+    submitBtn.disabled = true;
+});
+
+// Preview project
+function previewProject() {
+    const name = document.getElementById('name').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const isActive = document.getElementById('is_active').checked;
+    
+    if (!name) {
+        showAlert('Please enter a project name to preview.', 'warning');
+        return;
+    }
+    
+    const previewContent = `
+        <div class="card border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-project-diagram text-primary me-2"></i>
+                    ${name}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    <p class="mb-0">${description || 'No description provided'}</p>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Status:</strong>
+                        <span class="badge ${isActive ? 'bg-success' : 'bg-secondary'}">
+                            ${isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Created by:</strong>
+                        <span>${document.querySelector('small').textContent.split(': ')[1]}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('previewContent').innerHTML = previewContent;
+    new bootstrap.Modal(document.getElementById('previewModal')).show();
+}
+
+// Submit form from preview
+function submitForm() {
+    document.getElementById('createProjectForm').submit();
+}
+
+// Show alert function
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Auto-save draft (optional feature)
+let autoSaveTimer;
+document.getElementById('name').addEventListener('input', function() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+        const name = document.getElementById('name').value.trim();
+        const description = document.getElementById('description').value.trim();
+        
+        if (name || description) {
+            localStorage.setItem('projectDraft', JSON.stringify({
+                name: name,
+                description: description,
+                timestamp: new Date().toISOString()
+            }));
+        }
+    }, 2000);
+});
+
+// Load draft on page load
+window.addEventListener('load', function() {
+    const draft = localStorage.getItem('projectDraft');
+    if (draft) {
+        const data = JSON.parse(draft);
+        const draftDate = new Date(data.timestamp);
+        const now = new Date();
+        
+        // Only load draft if it's less than 1 hour old
+        if (now - draftDate < 3600000) {
+            if (confirm('Found a saved draft. Would you like to load it?')) {
+                document.getElementById('name').value = data.name || '';
+                document.getElementById('description').value = data.description || '';
+                document.getElementById('charCount').textContent = (data.description || '').length;
+            }
+        }
+        localStorage.removeItem('projectDraft');
+    }
+});
+</script>
+{% endblock %} 

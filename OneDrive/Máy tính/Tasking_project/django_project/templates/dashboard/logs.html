@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}System Logs - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-file-alt me-2"></i>System Logs
+        </h1>
+        <p class="text-muted">Monitor system activity, errors, and debug information</p>
+    </div>
+    <div>
+        <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Log Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-list fa-2x text-primary mb-2"></i>
+                <h4>{{ log_stats.total_entries }}</h4>
+                <p class="mb-0 text-muted">Total Entries</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                <h4>{{ log_stats.error_count }}</h4>
+                <p class="mb-0 text-muted">Errors</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-user-clock fa-2x text-info mb-2"></i>
+                <h4>{{ log_stats.login_attempts }}</h4>
+                <p class="mb-0 text-muted">Login Attempts</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-success mb-2"></i>
+                <h4>{{ log_stats.user_activities }}</h4>
+                <p class="mb-0 text-muted">User Activities</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Tabs -->
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="logTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
+                    <i class="fas fa-clock me-2"></i>Activity Logs
+                    <span class="badge bg-primary ms-2">{{ log_data.activity_logs|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="error-tab" data-bs-toggle="tab" data-bs-target="#error" type="button" role="tab">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Error Logs
+                    <span class="badge bg-danger ms-2">{{ log_data.error_logs|length }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="debug-tab" data-bs-toggle="tab" data-bs-target="#debug" type="button" role="tab">
+                    <i class="fas fa-bug me-2"></i>Debug Logs
+                    <span class="badge bg-secondary ms-2">{{ log_data.debug_logs|length }}</span>
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="logTabsContent">
+            <!-- Activity Logs Tab -->
+            <div class="tab-pane fade show active" id="activity" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Recent Activity Logs</h6>
+                    <small class="text-muted">Showing last 100 entries</small>
+                </div>
+                {% if log_data.activity_logs %}
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-sm">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Level</th>
+                                    <th>Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in log_data.activity_logs %}
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">{{ log.timestamp }}</small>
+                                    </td>
+                                    <td>
+                                        {% if log.level == 'INFO' %}
+                                            <span class="badge bg-info">{{ log.level }}</span>
+                                        {% elif log.level == 'WARNING' %}
+                                            <span class="badge bg-warning">{{ log.level }}</span>
+                                        {% elif log.level == 'ERROR' %}
+                                            <span class="badge bg-danger">{{ log.level }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ log.level }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ log.message }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No activity logs found</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Error Logs Tab -->
+            <div class="tab-pane fade" id="error" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Error Logs</h6>
+                    <small class="text-muted">Showing last 100 entries</small>
+                </div>
+                {% if log_data.error_logs %}
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-sm">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Level</th>
+                                    <th>Error Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in log_data.error_logs %}
+                                <tr class="table-danger">
+                                    <td>
+                                        <small class="text-muted">{{ log.timestamp }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ log.level }}</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ log.message }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p class="text-muted">No error logs found - System is running smoothly!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Debug Logs Tab -->
+            <div class="tab-pane fade" id="debug" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Debug Logs</h6>
+                    <small class="text-muted">Showing last 100 entries</small>
+                </div>
+                {% if log_data.debug_logs %}
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-sm">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Level</th>
+                                    <th>Debug Message</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in log_data.debug_logs %}
+                                <tr>
+                                    <td>
+                                        <small class="text-muted">{{ log.timestamp }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ log.level }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ log.message }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-bug fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No debug logs found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log File Information -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Log File Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Activity Log:</strong><br>
+                        <small class="text-muted">{{ log_files.activity }}</small>
+                    </div>
+                    <div class="col-6">
+                        <strong>Error Log:</strong><br>
+                        <small class="text-muted">{{ log_files.error }}</small>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-6">
+                        <strong>Debug Log:</strong><br>
+                        <small class="text-muted">{{ log_files.debug }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Log Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h6 class="text-danger">{{ log_stats.error_count }}</h6>
+                        <small class="text-muted">Errors</small>
+                    </div>
+                    <div class="col-4">
+                        <h6 class="text-warning">{{ log_stats.warning_count }}</h6>
+                        <small class="text-muted">Warnings</small>
+                    </div>
+                    <div class="col-4">
+                        <h6 class="text-info">{{ log_stats.info_count }}</h6>
+                        <small class="text-muted">Info</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h6 class="text-success">{{ log_stats.login_attempts }}</h6>
+                        <small class="text-muted">Login Attempts</small>
+                    </div>
+                    <div class="col-6">
+                        <h6 class="text-danger">{{ log_stats.failed_logins }}</h6>
+                        <small class="text-muted">Failed Logins</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Log Management</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'dashboard:home' %}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/admin/" class="btn btn-outline-warning btn-sm w-100">
+                            <i class="fas fa-cog me-2"></i>Django Admin
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info btn-sm w-100" onclick="refreshLogs()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh Logs
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="exportLogs()">
+                            <i class="fas fa-download me-2"></i>Export Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshLogs() {
+    location.reload();
+}
+
+function exportLogs() {
+    // Simple export functionality - could be enhanced with AJAX
+    alert('Export functionality would download all log files as a zip archive.');
+}
+
+// Auto-refresh logs every 30 seconds
+setInterval(function() {
+    // Only refresh if user is on logs page
+    if (window.location.pathname.includes('logs')) {
+        refreshLogs();
+    }
+}, 30000);
+</script>
+{% endblock %} 

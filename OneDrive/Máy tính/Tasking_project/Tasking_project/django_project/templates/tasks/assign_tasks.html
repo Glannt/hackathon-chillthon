@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load task_tags %}
+
+{% block title %}Task Assignment - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-tasks me-2"></i>Task Assignment
+        </h1>
+        <p class="text-muted">Manage and assign tasks to team members</p>
+    </div>
+    <div>
+        <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- User Workload Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Team Workload Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for workload in user_workload %}
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex align-items-center p-3 border rounded">
+                            <div class="flex-shrink-0">
+                                <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                                    {{ workload.user.first_name|first }}{{ workload.user.last_name|first }}
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">{{ workload.user.get_full_name }}</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        {{ workload.active_tasks }} active / {{ workload.total_tasks }} total
+                                    </small>
+                                    <span class="badge bg-{% if workload.workload_percentage > 80 %}danger{% elif workload.workload_percentage > 60 %}warning{% else %}success{% endif %}">
+                                        {{ workload.workload_percentage|floatformat:0 }}%
+                                    </span>
+                                </div>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-{% if workload.workload_percentage > 80 %}danger{% elif workload.workload_percentage > 60 %}warning{% else %}success{% endif %}" 
+                                         style="width: {{ workload.workload_percentage }}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Assignment Interface -->
+<div class="row">
+    <!-- Create and Assign New Task -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>Create & Assign New Task
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create_and_assign">
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Task Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="project" class="form-label">Project</label>
+                                <select class="form-select" id="project" name="project" required>
+                                    <option value="">Select Project</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.id }}">{{ project.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="assigned_to" class="form-label">Assign To</label>
+                                <select class="form-select" id="assigned_to" name="assigned_to" required>
+                                    <option value="">Select User</option>
+                                    {% for user in users %}
+                                    {% if user.userprofile.role == 'user' %}
+                                    <option value="{{ user.id }}">{{ user.get_full_name }}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="priority" class="form-label">Priority</label>
+                                <select class="form-select" id="priority" name="priority" required>
+                                    {% for value, label in priority_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="deadline" class="form-label">Deadline</label>
+                                <input type="datetime-local" class="form-control" id="deadline" name="deadline" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="estimated_hours" class="form-label">Est. Hours</label>
+                                <input type="number" class="form-control" id="estimated_hours" name="estimated_hours" step="0.5" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Create & Assign Task
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reassign Existing Tasks -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>Reassign Tasks
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Single Task Reassignment -->
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="assign_single">
+                    
+                    <div class="mb-3">
+                        <label for="task_id" class="form-label">Select Task</label>
+                        <select class="form-select" id="task_id" name="task_id" required>
+                            <option value="">Choose a task...</option>
+                            {% for status, status_label in status_choices %}
+                            <optgroup label="{{ status_label }}">
+                                {% for task in tasks_by_status|get_item:status %}
+                                <option value="{{ task.id }}">
+                                    {{ task.title }} ({{ task.assigned_to.get_full_name }})
+                                </option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reassign_to" class="form-label">Reassign To</label>
+                        <select class="form-select" id="reassign_to" name="assigned_to" required>
+                            <option value="">Select User</option>
+                            {% for user in users %}
+                            {% if user.userprofile.role == 'user' %}
+                            <option value="{{ user.id }}">{{ user.get_full_name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-exchange-alt me-2"></i>Reassign Task
+                    </button>
+                </form>
+                
+                <hr>
+                
+                <!-- Bulk Assignment -->
+                <h6 class="mb-3">Bulk Assignment</h6>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="bulk_assign">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Select Tasks</label>
+                        <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                            {% for status, status_label in status_choices %}
+                            <div class="mb-2">
+                                <strong>{{ status_label }}</strong>
+                                {% for task in tasks_by_status|get_item:status %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="task_ids" value="{{ task.id }}" id="task_{{ task.id }}">
+                                    <label class="form-check-label" for="task_{{ task.id }}">
+                                        {{ task.title }} ({{ task.assigned_to.get_full_name }})
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulk_assigned_to" class="form-label">Assign All To</label>
+                        <select class="form-select" id="bulk_assigned_to" name="bulk_assigned_to" required>
+                            <option value="">Select User</option>
+                            {% for user in users %}
+                            {% if user.userprofile.role == 'user' %}
+                            <option value="{{ user.id }}">{{ user.get_full_name }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-users me-2"></i>Bulk Assign
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-tasks fa-2x text-primary mb-2"></i>
+                <h4>{{ tasks_by_status.new|length }}</h4>
+                <p class="mb-0 text-muted">New Tasks</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h4>{{ tasks_by_status.in_progress|length }}</h4>
+                <p class="mb-0 text-muted">In Progress</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-eye fa-2x text-info mb-2"></i>
+                <h4>{{ tasks_by_status.review|length }}</h4>
+                <p class="mb-0 text-muted">Under Review</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4>{{ tasks_by_status.completed|length }}</h4>
+                <p class="mb-0 text-muted">Completed</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-select current date and time for deadline
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    document.getElementById('deadline').value = localDateTime;
+});
+</script>
+{% endblock %} 

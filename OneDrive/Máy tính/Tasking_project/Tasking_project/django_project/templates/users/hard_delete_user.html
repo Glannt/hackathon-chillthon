@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Permanently Delete User - {{ user_to_delete.get_full_name|default:user_to_delete.username }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>⚠️ PERMANENT USER DELETION</h5>
+            </div>
+            <div class="card-body">
+                <!-- Critical Warning -->
+                <div class="alert alert-danger border-danger">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>CRITICAL WARNING</h6>
+                    <p class="mb-2"><strong>This action will PERMANENTLY DELETE the user account and ALL associated data!</strong></p>
+                    <p class="mb-0">This action cannot be undone. The following will be permanently removed:</p>
+                    <ul class="mt-2 mb-0">
+                        <li>User account and profile</li>
+                        <li>All assigned tasks and task history</li>
+                        <li>All attendance records</li>
+                        <li>All comments and notifications</li>
+                        <li>All project associations</li>
+                        <li>All system logs related to this user</li>
+                    </ul>
+                </div>
+
+                <!-- User Information -->
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-times fa-4x text-danger mb-3"></i>
+                    <h5 class="text-danger">{{ user_to_delete.get_full_name|default:user_to_delete.username }}</h5>
+                    <p class="text-muted">@{{ user_to_delete.username }}</p>
+                    
+                    {% if user_to_delete.userprofile.role == 'admin' %}
+                        <span class="badge bg-danger fs-6">Admin</span>
+                    {% elif user_to_delete.userprofile.role == 'manager' %}
+                        <span class="badge bg-warning fs-6">Manager</span>
+                    {% else %}
+                        <span class="badge bg-info fs-6">User</span>
+                    {% endif %}
+                </div>
+
+                <!-- User Details -->
+                <div class="row text-center mb-4">
+                    <div class="col-md-4">
+                        <strong>Email:</strong><br>
+                        <small class="text-muted">{{ user_to_delete.email }}</small>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Department:</strong><br>
+                        <small class="text-muted">{{ user_to_delete.userprofile.department|default:"Not set" }}</small>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Joined:</strong><br>
+                        <small class="text-muted">{{ user_to_delete.date_joined|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+
+                <!-- User Statistics -->
+                <div class="row text-center mb-4">
+                    <div class="col-md-3">
+                        <div class="border rounded p-2">
+                            <strong class="text-primary">{{ user_to_delete.assigned_tasks.count }}</strong><br>
+                            <small class="text-muted">Assigned Tasks</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-2">
+                            <strong class="text-success">{{ user_to_delete.attendances.count }}</strong><br>
+                            <small class="text-muted">Attendance Records</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-2">
+                            <strong class="text-info">{{ user_to_delete.created_tasks.count }}</strong><br>
+                            <small class="text-muted">Created Tasks</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-2">
+                            <strong class="text-warning">{{ user_to_delete.received_notifications.count }}</strong><br>
+                            <small class="text-muted">Notifications</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirmation Form -->
+                <div class="border-top pt-4">
+                    <form method="post" id="hardDeleteForm">
+                        {% csrf_token %}
+                        
+                        <!-- Multiple confirmation steps -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmDeletion" required>
+                            <label class="form-check-label" for="confirmDeletion">
+                                I understand that this action will <strong>PERMANENTLY DELETE</strong> the user account for 
+                                <strong>{{ user_to_delete.get_full_name|default:user_to_delete.username }}</strong>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmDataLoss" required>
+                            <label class="form-check-label" for="confirmDataLoss">
+                                I understand that <strong>ALL user data will be permanently lost</strong> and cannot be recovered
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmIrreversible" required>
+                            <label class="form-check-label" for="confirmIrreversible">
+                                I understand that this action is <strong>IRREVERSIBLE</strong> and cannot be undone
+                            </label>
+                        </div>
+                        
+                        <!-- Type confirmation -->
+                        <div class="mb-3">
+                            <label for="confirmationText" class="form-label">
+                                Type <strong>"DELETE {{ user_to_delete.username }}"</strong> to confirm:
+                            </label>
+                            <input type="text" class="form-control" id="confirmationText" 
+                                   placeholder="DELETE {{ user_to_delete.username }}" required>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'users:user_detail' user_to_delete.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="hardDeleteBtn" disabled>
+                                <i class="fas fa-trash-alt me-2"></i>Permanently Delete User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alternative Actions -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle me-2"></i>Alternative Actions</h6>
+                <p class="text-muted mb-2">Consider these safer alternatives before permanent deletion:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{% url 'users:delete_user' user_to_delete.pk %}" class="btn btn-outline-warning btn-sm w-100 mb-2">
+                            <i class="fas fa-user-slash me-2"></i>Deactivate User (Reversible)
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'users:edit_user' user_to_delete.pk %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                            <i class="fas fa-edit me-2"></i>Edit User Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const confirmationText = document.getElementById('confirmationText');
+    const button = document.getElementById('hardDeleteBtn');
+    const expectedText = 'DELETE {{ user_to_delete.username }}';
+    
+    function validateForm() {
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        const textCorrect = confirmationText.value === expectedText;
+        button.disabled = !(allChecked && textCorrect);
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', validateForm);
+    });
+    
+    confirmationText.addEventListener('input', validateForm);
+    
+    // Add final confirmation on form submit
+    const form = document.getElementById('hardDeleteForm');
+    form.addEventListener('submit', function(e) {
+        if (!confirm('⚠️ FINAL WARNING: Are you absolutely sure you want to PERMANENTLY DELETE this user? This action cannot be undone!')) {
+            e.preventDefault();
+        } else {
+            // Show loading state
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Deleting...';
+            button.disabled = true;
+        }
+    });
+});
+</script>
+{% endblock %} 

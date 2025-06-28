@@ -1,0 +1,18 @@
+# Core Django Framework
+Django==4.2.7
+
+# Database Driver
+mysqlclient==2.2.0
+
+# Image Processing (for UserProfile.avatar field)
+Pillow==10.1.0
+
+# Form Styling with Bootstrap 5
+django-crispy-forms==2.1
+crispy-bootstrap5==0.7
+
+# Development and Production Tools
+python-decouple==3.8
+
+# Optional: Development Extensions (uncomment if needed)
+# django-extensions==3.2.3 

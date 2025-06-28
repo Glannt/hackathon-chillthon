@@ -1,0 +1,398 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Attendance History - Employee Task Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-history me-2"></i>Attendance History
+        </h1>
+        <p class="text-muted">View your attendance records and statistics</p>
+    </div>
+    <div>
+        <a href="{% url 'attendance:dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Attendance
+        </a>
+    </div>
+</div>
+
+<!-- Month/Year Selector -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="month" class="form-label">Month</label>
+                <select class="form-select" id="month" name="month">
+                    {% for m in "123456789101112"|make_list %}
+                        {% with month_num=m|add:"0" %}
+                        <option value="{{ month_num }}" {% if current_month == month_num|add:"0" %}selected{% endif %}>
+                            {{ month_num|add:"0"|date:"F" }}
+                        </option>
+                        {% endwith %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="year" class="form-label">Year</label>
+                <select class="form-select" id="year" name="year">
+                    {% for y in "202320242025"|make_list %}
+                        {% with year_num=y|add:"0" %}
+                        <option value="202{{ year_num }}" {% if current_year == year_num|add:"2020" %}selected{% endif %}>
+                            202{{ year_num }}
+                        </option>
+                        {% endwith %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>View Records
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Summary -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                <h4>{{ stats.total_days }}</h4>
+                <p class="mb-0 text-muted">Total Days</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4>{{ stats.present_days }}</h4>
+                <p class="mb-0 text-muted">Present Days</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                <h4>{{ stats.late_days }}</h4>
+                <p class="mb-0 text-muted">Late Days</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-hourglass-half fa-2x text-info mb-2"></i>
+                <h4>{{ stats.total_hours|floatformat:1 }}</h4>
+                <p class="mb-0 text-muted">Total Hours</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Records -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Attendance Records for {{ month_name }} {{ current_year }}
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        {% if attendance_records %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Day</th>
+                            <th>Status</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Hours</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance in attendance_records %}
+                        <tr>
+                            <td>
+                                <strong>{{ attendance.date|date:"M d, Y" }}</strong>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ attendance.date|date:"l" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge {{ attendance.status_badge_class }}">
+                                    {{ attendance.get_status_display }}
+                                </span>
+                                {% if attendance.is_late %}
+                                    <br><small class="text-warning">Late arrival</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if attendance.check_in %}
+                                    <span class="text-success">{{ attendance.check_in|time:"H:i" }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if attendance.check_out %}
+                                    <span class="text-danger">{{ attendance.check_out|time:"H:i" }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if attendance.worked_hours %}
+                                    <strong>{{ attendance.worked_hours_display }}</strong>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if attendance.notes %}
+                                    <small class="text-muted">{{ attendance.notes|truncatechars:30 }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h5>No attendance records found</h5>
+                <p class="text-muted">No attendance records for {{ month_name }} {{ current_year }}</p>
+                <a href="{% url 'attendance:dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Start Tracking Attendance
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Calendar View (Simplified to avoid template errors) -->
+{% if attendance_records %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-calendar-alt me-2"></i>Monthly Summary
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h5>{{ stats.present_days }}</h5>
+                    <p class="mb-0">Present Days</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                    <h5>{{ stats.late_days }}</h5>
+                    <p class="mb-0">Late Days</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 bg-danger bg-opacity-10 rounded">
+                    <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                    <h5>{{ stats.absent_days }}</h5>
+                    <p class="mb-0">Absent Days</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Attendance Timeline -->
+        <div class="mt-4">
+            <h6>Recent Attendance Timeline</h6>
+            <div class="timeline">
+                {% for attendance in attendance_records|slice:":10" %}
+                <div class="timeline-item">
+                    <div class="timeline-marker {% if attendance.status == 'present' %}bg-success{% elif attendance.status == 'late' %}bg-warning{% elif attendance.status == 'absent' %}bg-danger{% else %}bg-secondary{% endif %}"></div>
+                    <div class="timeline-content">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ attendance.date|date:"M d, Y" }}</strong>
+                                <span class="badge badge-sm ms-2 {% if attendance.status == 'present' %}bg-success{% elif attendance.status == 'late' %}bg-warning{% elif attendance.status == 'absent' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ attendance.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="text-muted">
+                                {% if attendance.worked_hours %}
+                                    {{ attendance.worked_hours_display }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Export Options -->
+{% if attendance_records %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-download me-2"></i>Export Options
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <button class="btn btn-outline-primary w-100 mb-2" onclick="exportToCSV()">
+                    <i class="fas fa-file-csv me-2"></i>Export to CSV
+                </button>
+            </div>
+            <div class="col-md-6">
+                <button class="btn btn-outline-secondary w-100 mb-2" onclick="printRecords()">
+                    <i class="fas fa-print me-2"></i>Print Records
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- CSS for Timeline -->
+<style>
+.timeline {
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 12px;
+    width: 2px;
+    height: calc(100% + 8px);
+    background-color: #dee2e6;
+}
+
+.timeline-content {
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border-left: 3px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .timeline-item {
+        padding-left: 25px;
+    }
+    
+    .timeline-marker {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .timeline-item:not(:last-child)::before {
+        left: 4px;
+    }
+}
+</style>
+
+<!-- JavaScript for Export and Print -->
+<script>
+function exportToCSV() {
+    // Create CSV content
+    let csvContent = "Date,Day,Status,Check-in,Check-out,Hours,Notes\n";
+    
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = [];
+        
+        cells.forEach((cell, index) => {
+            let text = cell.textContent.trim();
+            // Remove extra whitespace and newlines
+            text = text.replace(/\s+/g, ' ');
+            // Escape quotes
+            text = text.replace(/"/g, '""');
+            rowData.push(`"${text}"`);
+        });
+        
+        csvContent += rowData.join(',') + '\n';
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `attendance_${current_year}_${current_month}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function printRecords() {
+    window.print();
+}
+
+// Add print styles
+const printStyles = `
+@media print {
+    .btn, .card-header, .navbar, .sidebar {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .card-body {
+        padding: 0 !important;
+    }
+    
+    .table {
+        font-size: 12px !important;
+    }
+    
+    .table th, .table td {
+        padding: 4px !important;
+    }
+}
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = printStyles;
+document.head.appendChild(styleSheet);
+</script>
+{% endblock %} 

@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit User - Employee Task Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-edit me-2"></i>Edit User
+        </h1>
+        <p class="text-muted">Update user information and permissions</p>
+    </div>
+    <div>
+        <a href="{% url 'users:user_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Users
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>Edit User: {{ edited_user.get_full_name|default:edited_user.username }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Basic Information
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{{ edited_user.username }}" readonly>
+                            <div class="form-text">Username cannot be changed</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ edited_user.email }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{{ edited_user.first_name }}">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{{ edited_user.last_name }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Role and Permissions -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-shield-alt me-2"></i>Role and Permissions
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="role" name="role" required>
+                                {% for value, label in role_choices %}
+                                <option value="{{ value }}" {% if profile.role == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                <strong>Admin:</strong> Full system access<br>
+                                <strong>Manager:</strong> Team management and task creation<br>
+                                <strong>User:</strong> Basic task and attendance access
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="is_active" class="form-label">Account Status</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                       {% if edited_user.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">
+                                    Active Account
+                                </label>
+                            </div>
+                            <div class="form-text">Inactive users cannot log in</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Department Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-building me-2"></i>Department Information
+                            </h6>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <input type="text" class="form-control" id="department" name="department" 
+                                   value="{{ profile.department }}" placeholder="e.g., Development, Design, Marketing">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="position" class="form-label">Position</label>
+                            <input type="text" class="form-control" id="position" name="position" 
+                                   value="{{ profile.position }}" placeholder="e.g., Senior Developer, Designer">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ profile.phone }}" placeholder="+1234567890">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="hire_date" class="form-label">Hire Date</label>
+                            <input type="date" class="form-control" id="hire_date" name="hire_date" 
+                                   value="{{ profile.hire_date|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <hr class="my-4">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <a href="{% url 'users:user_detail' edited_user.pk %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Cancel
+                                    </a>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- User Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-user me-2"></i>User Summary
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-user-circle fa-4x text-muted"></i>
+                </div>
+                <h5 class="text-center mb-2">{{ edited_user.get_full_name|default:edited_user.username }}</h5>
+                <p class="text-center text-muted mb-3">@{{ edited_user.username }}</p>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h6 class="text-muted mb-1">Role</h6>
+                            {% if profile.role == 'admin' %}
+                                <span class="badge bg-danger">Admin</span>
+                            {% elif profile.role == 'manager' %}
+                                <span class="badge bg-warning">Manager</span>
+                            {% else %}
+                                <span class="badge bg-info">User</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h6 class="text-muted mb-1">Status</h6>
+                        {% if edited_user.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Member since:</span>
+                        <span>{{ edited_user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Last login:</span>
+                        <span>{{ edited_user.last_login|timesince|default:"Never" }} ago</span>
+                    </div>
+                    {% if profile.hire_date %}
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Hire date:</span>
+                        <span>{{ profile.hire_date|date:"M d, Y" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'users:user_detail' edited_user.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye me-2"></i>View Details
+                    </a>
+                    <a href="{% url 'users:reset_password' edited_user.pk %}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-key me-2"></i>Reset Password
+                    </a>
+                    {% if edited_user != user %}
+                        {% if edited_user.is_active %}
+                        <a href="{% url 'users:delete_user' edited_user.pk %}" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-user-slash me-2"></i>Deactivate User
+                        </a>
+                        {% else %}
+                        <a href="{% url 'users:reactivate_user' edited_user.pk %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-user-check me-2"></i>Reactivate User
+                        </a>
+                        {% endif %}
+                        
+                        <!-- Hard Delete - Only for non-admin users -->
+                        {% if profile.role != 'admin' %}
+                        <a href="{% url 'users:hard_delete_user' edited_user.pk %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash-alt me-2"></i>Permanently Delete User
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for form validation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const emailInput = document.getElementById('email');
+    const roleSelect = document.getElementById('role');
+    
+    // Email validation
+    emailInput.addEventListener('blur', function() {
+        const email = this.value;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email && !emailRegex.test(email)) {
+            this.classList.add('is-invalid');
+            if (!this.nextElementSibling || !this.nextElementSibling.classList.contains('invalid-feedback')) {
+                const feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                feedback.textContent = 'Please enter a valid email address';
+                this.parentNode.appendChild(feedback);
+            }
+        } else {
+            this.classList.remove('is-invalid');
+            const feedback = this.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.remove();
+            }
+        }
+    });
+    
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Check required fields
+        const requiredFields = form.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // Check email format
+        const email = emailInput.value;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email && !emailRegex.test(email)) {
+            emailInput.classList.add('is-invalid');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            showAlert('Please fix the errors in the form.', 'danger');
+        }
+    });
+    
+    // Show alert function
+    function showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.card-body');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %} 

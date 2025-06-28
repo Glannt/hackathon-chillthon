@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Deactivate User - {{ user_to_delete.get_full_name|default:user_to_delete.username }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Confirm User Deactivation</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-warning me-2"></i>Warning!</h6>
+                    You are about to deactivate this user account. This action will:
+                    <ul class="mt-2 mb-0">
+                        <li>Prevent the user from logging in</li>
+                        <li>Hide the user from active user lists</li>
+                        <li>Preserve all user data and history</li>
+                        <li>Can be reversed by reactivating the account</li>
+                    </ul>
+                </div>
+
+                <!-- User Information -->
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-circle fa-4x text-muted mb-3"></i>
+                    <h5>{{ user_to_delete.get_full_name|default:user_to_delete.username }}</h5>
+                    <p class="text-muted">@{{ user_to_delete.username }}</p>
+                    
+                    {% if user_to_delete.userprofile.role == 'admin' %}
+                        <span class="badge bg-danger fs-6">Admin</span>
+                    {% elif user_to_delete.userprofile.role == 'manager' %}
+                        <span class="badge bg-warning fs-6">Manager</span>
+                    {% else %}
+                        <span class="badge bg-info fs-6">User</span>
+                    {% endif %}
+                </div>
+
+                <div class="row text-center mb-4">
+                    <div class="col">
+                        <strong>Email:</strong><br>
+                        <small class="text-muted">{{ user_to_delete.email }}</small>
+                    </div>
+                    <div class="col">
+                        <strong>Department:</strong><br>
+                        <small class="text-muted">{{ user_to_delete.userprofile.department|default:"Not set" }}</small>
+                    </div>
+                    <div class="col">
+                        <strong>Joined:</strong><br>
+                        <small class="text-muted">{{ user_to_delete.date_joined|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+
+                <!-- Confirmation Form -->
+                <div class="border-top pt-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmDeactivation" required>
+                            <label class="form-check-label" for="confirmDeactivation">
+                                I understand that this will deactivate the user account for 
+                                <strong>{{ user_to_delete.get_full_name|default:user_to_delete.username }}</strong>
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'users:user_detail' user_to_delete.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger" id="deactivateBtn" disabled>
+                                <i class="fas fa-user-slash me-2"></i>Deactivate User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle me-2"></i>What happens when a user is deactivated?</h6>
+                <ul class="small text-muted mb-0">
+                    <li>The user will be immediately logged out from all sessions</li>
+                    <li>All assigned tasks remain intact and can be reassigned</li>
+                    <li>Attendance records are preserved for reporting</li>
+                    <li>User can be reactivated later by editing their profile</li>
+                    <li>No data is permanently deleted</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('confirmDeactivation');
+    const button = document.getElementById('deactivateBtn');
+    
+    checkbox.addEventListener('change', function() {
+        button.disabled = !this.checked;
+    });
+    
+    // Add confirmation on form submit
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        if (!confirm('Are you absolutely sure you want to deactivate this user?')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %} 

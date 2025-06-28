@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reactivate User - {{ user_to_reactivate.get_full_name|default:user_to_reactivate.username }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Confirm User Reactivation</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Information</h6>
+                    You are about to reactivate this user account. This action will:
+                    <ul class="mt-2 mb-0">
+                        <li>Allow the user to log in again</li>
+                        <li>Restore all user permissions and access</li>
+                        <li>Make the user visible in active user lists</li>
+                        <li>Preserve all existing user data and history</li>
+                    </ul>
+                </div>
+
+                <!-- User Information -->
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-circle fa-4x text-muted mb-3"></i>
+                    <h5>{{ user_to_reactivate.get_full_name|default:user_to_reactivate.username }}</h5>
+                    <p class="text-muted">@{{ user_to_reactivate.username }}</p>
+                    
+                    {% if user_to_reactivate.userprofile.role == 'admin' %}
+                        <span class="badge bg-danger fs-6">Admin</span>
+                    {% elif user_to_reactivate.userprofile.role == 'manager' %}
+                        <span class="badge bg-warning fs-6">Manager</span>
+                    {% else %}
+                        <span class="badge bg-info fs-6">User</span>
+                    {% endif %}
+                    
+                    <span class="badge bg-secondary fs-6 ms-2">Currently Inactive</span>
+                </div>
+
+                <div class="row text-center mb-4">
+                    <div class="col">
+                        <strong>Email:</strong><br>
+                        <small class="text-muted">{{ user_to_reactivate.email }}</small>
+                    </div>
+                    <div class="col">
+                        <strong>Department:</strong><br>
+                        <small class="text-muted">{{ user_to_reactivate.userprofile.department|default:"Not set" }}</small>
+                    </div>
+                    <div class="col">
+                        <strong>Joined:</strong><br>
+                        <small class="text-muted">{{ user_to_reactivate.date_joined|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+
+                <!-- Confirmation Form -->
+                <div class="border-top pt-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="confirmReactivation" required>
+                            <label class="form-check-label" for="confirmReactivation">
+                                I understand that this will reactivate the user account for 
+                                <strong>{{ user_to_reactivate.get_full_name|default:user_to_reactivate.username }}</strong>
+                            </label>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'users:user_detail' user_to_reactivate.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success" id="reactivateBtn" disabled>
+                                <i class="fas fa-user-check me-2"></i>Reactivate User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6><i class="fas fa-info-circle me-2"></i>What happens when a user is reactivated?</h6>
+                <ul class="small text-muted mb-0">
+                    <li>The user will be able to log in with their existing credentials</li>
+                    <li>All assigned tasks and permissions will be restored</li>
+                    <li>Attendance records and history remain intact</li>
+                    <li>The user will appear in active user lists and reports</li>
+                    <li>No data is lost during the reactivation process</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('confirmReactivation');
+    const button = document.getElementById('reactivateBtn');
+    
+    checkbox.addEventListener('change', function() {
+        button.disabled = !this.checked;
+    });
+    
+    // Add confirmation on form submit
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        if (!confirm('Are you sure you want to reactivate this user?')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %} 

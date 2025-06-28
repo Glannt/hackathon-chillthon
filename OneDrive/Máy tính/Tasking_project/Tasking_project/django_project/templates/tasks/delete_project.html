@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Delete Project - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+            <!-- Warning Header -->
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <div>
+                            <h4 class="mb-1">⚠️ Delete Project</h4>
+                            <p class="mb-0">This action cannot be undone!</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Project Information -->
+                    <div class="alert alert-warning border-left-warning">
+                        <h5 class="mb-3">
+                            <i class="fas fa-project-diagram me-2"></i>
+                            You are about to delete: <strong>{{ project.name }}</strong>
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Created by:</strong> {{ project.created_by.get_full_name|default:project.created_by.username }}</p>
+                                <p class="mb-1"><strong>Created on:</strong> {{ project.created_at|date:"M d, Y H:i" }}</p>
+                                <p class="mb-0"><strong>Status:</strong> 
+                                    <span class="badge {% if project.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {% if project.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Last updated:</strong> {{ project.updated_at|date:"M d, Y H:i" }}</p>
+                                {% if project.description %}
+                                <p class="mb-0"><strong>Description:</strong> {{ project.description|truncatechars:100 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Impact Analysis -->
+                    <div class="alert alert-danger">
+                        <h5 class="mb-3">
+                            <i class="fas fa-impact me-2"></i>
+                            Deletion Impact Analysis
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h6 class="text-danger">📋 Tasks to be deleted:</h6>
+                                    <p class="mb-1"><strong>{{ total_tasks }}</strong> tasks will be permanently deleted</p>
+                                    {% if task_status_counts %}
+                                        <ul class="list-unstyled ms-3">
+                                            {% for status_name, count in task_status_counts.items %}
+                                            <li>• {{ count }} {{ status_name }} task{{ count|pluralize }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6 class="text-danger">👥 Affected Users:</h6>
+                                    <p class="mb-1"><strong>{{ assigned_users_count }}</strong> user{{ assigned_users_count|pluralize }} will lose assigned tasks</p>
+                                    {% if assigned_users %}
+                                        <small class="text-muted">
+                                            Users: {{ assigned_users|join:", " }}{% if assigned_users_count > 5 %} and others{% endif %}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <h6 class="text-danger">💬 Comments to be deleted:</h6>
+                                    <p class="mb-1"><strong>{{ comments_count }}</strong> comment{{ comments_count|pluralize }} will be permanently deleted</p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6 class="text-danger">🗂️ Related Data:</h6>
+                                    <ul class="list-unstyled">
+                                        <li>• All task assignments</li>
+                                        <li>• Task progress history</li>
+                                        <li>• File attachments (if any)</li>
+                                        <li>• Activity logs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alternative Actions -->
+                    <div class="alert alert-info">
+                        <h6 class="mb-2">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Consider Alternative Actions:
+                        </h6>
+                        <ul class="mb-0">
+                            <li><strong>Archive Project:</strong> Mark as inactive instead of deleting</li>
+                            <li><strong>Transfer Ownership:</strong> Assign to another manager</li>
+                            <li><strong>Export Data:</strong> Backup project data before deletion</li>
+                            <li><strong>Notify Team:</strong> Inform affected users before deletion</li>
+                        </ul>
+                    </div>
+
+                    <!-- Confirmation Form -->
+                    {% if can_delete %}
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="border border-danger rounded p-3 bg-light">
+                            <h5 class="text-danger mb-3">
+                                <i class="fas fa-shield-alt me-2"></i>
+                                Safety Confirmations Required
+                            </h5>
+                            
+                            <!-- Confirmation 1: Project Name -->
+                            <div class="mb-3">
+                                <label for="confirm_name" class="form-label text-danger">
+                                    <strong>1. Type the project name to confirm:</strong>
+                                </label>
+                                <input type="text" 
+                                       class="form-control border-danger" 
+                                       id="confirm_name" 
+                                       name="confirm_name" 
+                                       placeholder="Enter exact project name: {{ project.name }}"
+                                       required
+                                       autocomplete="off">
+                                <small class="text-muted">Must match exactly: <code>{{ project.name }}</code></small>
+                            </div>
+                            
+                            <!-- Confirmation 2: DELETE word -->
+                            <div class="mb-3">
+                                <label for="confirm_action" class="form-label text-danger">
+                                    <strong>2. Type "DELETE" to confirm this action:</strong>
+                                </label>
+                                <input type="text" 
+                                       class="form-control border-danger" 
+                                       id="confirm_action" 
+                                       name="confirm_action" 
+                                       placeholder="Type DELETE in capital letters"
+                                       required
+                                       autocomplete="off">
+                            </div>
+                            
+                            <!-- Confirmation 3: Understanding consequences -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input border-danger" 
+                                           type="checkbox" 
+                                           id="understand_consequences" 
+                                           name="understand_consequences" 
+                                           required>
+                                    <label class="form-check-label text-danger" for="understand_consequences">
+                                        <strong>3. I understand that this action is permanent and cannot be undone</strong>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Warning Notice -->
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-skull-crossbones fa-2x me-3 text-danger"></i>
+                                    <div>
+                                        <strong>FINAL WARNING:</strong> This will permanently delete the project, all tasks, comments, and related data. This action cannot be reversed.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <div>
+                                <a href="{% url 'tasks:project_detail' project.pk %}" class="btn btn-secondary me-2">
+                                    <i class="fas fa-arrow-left me-1"></i>
+                                    Cancel
+                                </a>
+                                <a href="{% url 'tasks:project_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-list me-1"></i>
+                                    Back to Projects
+                                </a>
+                            </div>
+                            <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
+                                <i class="fas fa-trash-alt me-1"></i>
+                                DELETE PROJECT PERMANENTLY
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <h5>Permission Denied</h5>
+                        <p>You don't have permission to delete this project.</p>
+                        <a href="{% url 'tasks:project_detail' project.pk %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Back to Project
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const projectName = "{{ project.name }}";
+    const nameInput = document.getElementById('confirm_name');
+    const actionInput = document.getElementById('confirm_action');
+    const consequencesCheck = document.getElementById('understand_consequences');
+    const deleteBtn = document.getElementById('deleteBtn');
+    
+    function validateForm() {
+        const nameValid = nameInput.value.trim() === projectName;
+        const actionValid = actionInput.value === 'DELETE';
+        const consequencesValid = consequencesCheck.checked;
+        
+        if (nameValid && actionValid && consequencesValid) {
+            deleteBtn.disabled = false;
+            deleteBtn.classList.remove('btn-secondary');
+            deleteBtn.classList.add('btn-danger');
+        } else {
+            deleteBtn.disabled = true;
+            deleteBtn.classList.remove('btn-danger');
+            deleteBtn.classList.add('btn-secondary');
+        }
+        
+        // Visual feedback for individual fields
+        nameInput.classList.toggle('is-valid', nameValid && nameInput.value.trim() !== '');
+        nameInput.classList.toggle('is-invalid', !nameValid && nameInput.value.trim() !== '');
+        
+        actionInput.classList.toggle('is-valid', actionValid && actionInput.value !== '');
+        actionInput.classList.toggle('is-invalid', !actionValid && actionInput.value !== '');
+    }
+    
+    nameInput.addEventListener('input', validateForm);
+    actionInput.addEventListener('input', validateForm);
+    consequencesCheck.addEventListener('change', validateForm);
+    
+    // Final confirmation dialog
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!confirm('Are you absolutely sure you want to delete this project? This action cannot be undone!')) {
+            e.preventDefault();
+        }
+    });
+    
+    // Prevent accidental navigation
+    let formModified = false;
+    [nameInput, actionInput, consequencesCheck].forEach(input => {
+        input.addEventListener('change', () => formModified = true);
+    });
+    
+    window.addEventListener('beforeunload', function(e) {
+        if (formModified) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+});
+
+// Auto-focus first input
+document.getElementById('confirm_name').focus();
+</script>
+{% endblock %} 

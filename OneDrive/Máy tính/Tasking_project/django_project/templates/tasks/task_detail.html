@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ task.title }} - Task Detail{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-tasks me-2"></i>{{ task.title }}
+        </h1>
+        <p class="text-muted">Task details and progress tracking</p>
+    </div>
+    <div>
+        <a href="{% url 'tasks:task_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Tasks
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Task Details -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Task Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Description</h6>
+                        <p>{{ task.description }}</p>
+                        
+                        <h6>Project</h6>
+                        <span class="badge bg-secondary">{{ task.project.name }}</span>
+                        
+                        <h6>Assigned To</h6>
+                        <p>{{ task.assigned_to.get_full_name }}</p>
+                        
+                        <h6>Assigned By</h6>
+                        <p>{{ task.assigned_by.get_full_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Status</h6>
+                        <span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span>
+                        
+                        <h6>Priority</h6>
+                        <span class="badge {{ task.priority_badge_class }}">{{ task.get_priority_display }}</span>
+                        
+                        <h6>Deadline</h6>
+                        <p class="{% if task.is_overdue %}text-danger{% endif %}">
+                            {{ task.deadline|date:"F d, Y H:i" }}
+                            {% if task.is_overdue %}
+                            <br><small class="text-danger">Overdue</small>
+                            {% endif %}
+                        </p>
+                        
+                        <h6>Created</h6>
+                        <p>{{ task.created_at|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="mt-3">
+                    <h6>Progress</h6>
+                    <div class="progress" style="height: 20px;">
+                        {% if task.status == 'completed' %}
+                        <div class="progress-bar bg-success" style="width: 100%">100% Complete</div>
+                        {% elif task.status == 'in_progress' %}
+                        <div class="progress-bar bg-primary" style="width: 60%">60% In Progress</div>
+                        {% elif task.status == 'review' %}
+                        <div class="progress-bar bg-warning" style="width: 80%">80% Under Review</div>
+                        {% else %}
+                        <div class="progress-bar bg-secondary" style="width: 10%">10% New</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Time Tracking -->
+                {% if task.estimated_hours or task.actual_hours %}
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6>Estimated Hours</h6>
+                        <p>{{ task.estimated_hours|default:"Not set" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Actual Hours</h6>
+                        <p>{{ task.actual_hours|default:"Not tracked" }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Status Update -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Update Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <select name="status" class="form-select">
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if task.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" name="update_status" class="btn btn-primary w-100">
+                                <i class="fas fa-save me-2"></i>Update Status
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Comments -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>Comments ({{ comments|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Add Comment -->
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Add Comment</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="3" placeholder="Add your comment here..." required></textarea>
+                    </div>
+                    <button type="submit" name="add_comment" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add Comment
+                    </button>
+                </form>
+                
+                <!-- Comments List -->
+                {% if comments %}
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment-item border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                        {{ comment.user.first_name|first }}{{ comment.user.last_name|first }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ comment.user.get_full_name }}</strong>
+                                        <small class="text-muted ms-2">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                                    </div>
+                                </div>
+                                <p class="mb-0">{{ comment.comment }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-comments fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">No comments yet. Be the first to comment!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if user.userprofile.is_manager or user.userprofile.is_admin %}
+                    <a href="#" class="btn btn-outline-warning">
+                        <i class="fas fa-edit me-2"></i>Edit Task
+                    </a>
+                    <a href="#" class="btn btn-outline-info">
+                        <i class="fas fa-user-plus me-2"></i>Reassign
+                    </a>
+                    {% endif %}
+                    <a href="#" class="btn btn-outline-secondary">
+                        <i class="fas fa-print me-2"></i>Print
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="fas fa-share me-2"></i>Share
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Task Timeline -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Timeline
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6>Created</h6>
+                            <small class="text-muted">{{ task.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    
+                    {% if task.started_at %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6>Started</h6>
+                            <small class="text-muted">{{ task.started_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if task.completed_at %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6>Completed</h6>
+                            <small class="text-muted">{{ task.completed_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h6>Deadline</h6>
+                            <small class="text-muted">{{ task.deadline|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Related Tasks -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-link me-2"></i>Related Tasks
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for related_task in task.project.tasks.all|slice:":5" %}
+                {% if related_task != task %}
+                <div class="related-task-item mb-2">
+                    <a href="{% url 'tasks:task_detail' related_task.pk %}" class="text-decoration-none">
+                        <strong>{{ related_task.title }}</strong>
+                        <br>
+                        <small class="text-muted">
+                            {{ related_task.get_status_display }} • {{ related_task.assigned_to.get_full_name }}
+                        </small>
+                    </a>
+                </div>
+                {% endif %}
+                {% empty %}
+                <p class="text-muted">No related tasks</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -25px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.related-task-item {
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.related-task-item:hover {
+    background-color: #f8f9fa;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+</style>
+{% endblock %} 

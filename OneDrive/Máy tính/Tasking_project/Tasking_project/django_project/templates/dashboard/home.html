@@ -1,0 +1,1038 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Employee Task Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            {% if is_admin_dashboard %}
+                <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+            {% elif user.userprofile.is_manager %}
+                <i class="fas fa-users-cog me-2"></i>Manager Dashboard
+            {% else %}
+                <i class="fas fa-home me-2"></i>Dashboard
+            {% endif %}
+        </h1>
+        <p class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}!</p>
+    </div>
+    <div class="text-end">
+        <small class="text-muted">Current Time:</small><br>
+        <span id="current-time" class="fw-bold"></span>
+    </div>
+</div>
+
+<!-- Admin System Overview -->
+{% if is_admin_dashboard %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-gradient-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title mb-3"><i class="fas fa-chart-line me-2"></i>System Overview</h5>
+                <div class="row">
+                    <div class="col-md-2 text-center">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h3>{{ system_stats.total_users }}</h3>
+                        <p class="mb-0">Total Users</p>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <i class="fas fa-user-clock fa-2x mb-2"></i>
+                        <h3>{{ system_stats.active_users_today }}</h3>
+                        <p class="mb-0">Active Today</p>
+                        <small>{{ system_stats.daily_activity_rate }}% rate</small>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <i class="fas fa-circle text-success fa-2x mb-2"></i>
+                        <h3>{{ system_stats.online_users }}</h3>
+                        <p class="mb-0">Online Now</p>
+                        <small>{{ system_stats.online_rate }}% rate</small>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <i class="fas fa-project-diagram fa-2x mb-2"></i>
+                        <h3>{{ system_stats.total_projects }}</h3>
+                        <p class="mb-0">Projects</p>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <i class="fas fa-tasks fa-2x mb-2"></i>
+                        <h3>{{ system_stats.total_tasks }}</h3>
+                        <p class="mb-0">Tasks</p>
+                    </div>
+                    <div class="col-md-2 text-center">
+                        <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                        <h3>{{ today_attendance_overview.checked_in }}/{{ today_attendance_overview.total_employees }}</h3>
+                        <p class="mb-0">Present Today</p>
+                        <small>{{ today_attendance_overview.attendance_rate }}% rate</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced System Logs & User Activity Row -->
+<div class="row mb-4">
+    <!-- System Logs Cơ Bản -->
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>System Logs Cơ Bản
+                    {% if log_summary.system_health == 'good' %}
+                        <span class="badge bg-success ms-2">{{ log_summary.system_health|upper }}</span>
+                    {% elif log_summary.system_health == 'warning' %}
+                        <span class="badge bg-warning ms-2">{{ log_summary.system_health|upper }}</span>
+                    {% else %}
+                        <span class="badge bg-danger ms-2">{{ log_summary.system_health|upper }}</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ log_summary.total_entries_today }}</h4>
+                        <small>Entries Today</small>
+                    </div>
+                    <div class="col-6">
+                        {% if log_summary.error_count_today > 0 %}
+                            <h4 class="text-danger">{{ log_summary.error_count_today }}</h4>
+                        {% else %}
+                            <h4 class="text-success">{{ log_summary.error_count_today }}</h4>
+                        {% endif %}
+                        <small>Errors Today</small>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Login Attempts</span>
+                    <span class="badge bg-info">{{ log_summary.login_attempts_today }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>User Activities</span>
+                    <span class="badge bg-success">{{ log_summary.user_activities_today }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>System Health</span>
+                    {% if log_summary.system_health == 'good' %}
+                        <span class="badge bg-success">{{ log_summary.system_health|title }}</span>
+                    {% elif log_summary.system_health == 'warning' %}
+                        <span class="badge bg-warning">{{ log_summary.system_health|title }}</span>
+                    {% else %}
+                        <span class="badge bg-danger">{{ log_summary.system_health|title }}</span>
+                    {% endif %}
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'dashboard:logs' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-file-alt me-2"></i>View Detailed Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Đang Hoạt Động -->
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i>Users Đang Hoạt Động</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <h4 class="text-success">{{ system_stats.online_users }}</h4>
+                        <small>Online (1h)</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-info">{{ system_stats.active_users_today }}</h4>
+                        <small>Active Today</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-primary">{{ system_stats.active_users_week }}</h4>
+                        <small>Active (7d)</small>
+                    </div>
+                </div>
+                
+                <h6 class="text-muted mb-2">Recent Active Users:</h6>
+                {% if active_users_detail %}
+                    {% for user in active_users_detail|slice:":5" %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div class="flex-grow-1">
+                            <strong>{{ user.get_full_name|default:user.username }}</strong>
+                            <small class="text-muted d-block">
+                                {{ user.userprofile.get_role_display|default:"User" }} • 
+                                Last seen: {{ user.last_login|timesince }} ago
+                            </small>
+                        </div>
+                        <span class="badge bg-success">Online</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No active users found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tình Trạng Attendance Trong Ngày -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Tình Trạng Attendance Trong Ngày</h5>
+            </div>
+            <div class="card-body">
+                <!-- Attendance Summary Stats -->
+                <div class="row text-center mb-4">
+                    <div class="col-md-2">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h4 class="text-info">{{ today_attendance_overview.total_employees }}</h4>
+                                <small>Total Employees</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h4>{{ today_attendance_overview.checked_in }}</h4>
+                                <small>Checked In</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h4>{{ today_attendance_overview.still_working }}</h4>
+                                <small>Still Working</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h4>{{ today_attendance_overview.checked_out }}</h4>
+                                <small>Checked Out</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <h4>{{ today_attendance_overview.late_arrivals }}</h4>
+                                <small>Late Arrivals</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h4>{{ today_attendance_overview.absent }}</h4>
+                                <small>Absent</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attendance Rate Progress Bars -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Attendance Rate Today</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                            <div class="progress-bar bg-success" style="width: {{ today_attendance_overview.attendance_rate }}%">
+                                {{ today_attendance_overview.attendance_rate }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ today_attendance_overview.checked_in }} out of {{ today_attendance_overview.total_employees }} employees</small>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>On-Time Rate Today</h6>
+                        <div class="progress mb-2" style="height: 25px;">
+                            <div class="progress-bar bg-info" style="width: {{ today_attendance_overview.on_time_rate }}%">
+                                {{ today_attendance_overview.on_time_rate }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ today_attendance_overview.on_time_arrivals|default:0 }} on-time arrivals</small>
+                    </div>
+                </div>
+                
+                <!-- Recent Attendance Details -->
+                <h6 class="text-muted mb-3">Recent Check-ins Today:</h6>
+                {% if today_attendance_details %}
+                <div class="row">
+                    {% for attendance in today_attendance_details %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                            <div class="flex-grow-1">
+                                <strong>{{ attendance.user.get_full_name|default:attendance.user.username }}</strong>
+                                <small class="text-muted d-block">
+                                    Check-in: {{ attendance.check_in|time:"H:i"|default:"--:--" }}
+                                    {% if attendance.check_out %}
+                                        • Check-out: {{ attendance.check_out|time:"H:i" }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                {% if attendance.status == 'late' %}
+                                    <span class="badge bg-warning">Late</span>
+                                {% elif attendance.check_out %}
+                                    <span class="badge bg-primary">Done</span>
+                                {% elif attendance.check_in %}
+                                    <span class="badge bg-success">Working</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Absent</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                    <p class="text-muted text-center">No attendance records for today yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tiến Độ Các Dự Án Chi Tiết -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Tiến Độ Các Dự Án</h5>
+            </div>
+            <div class="card-body">
+                {% if project_progress %}
+                <div class="row">
+                    {% for item in project_progress %}
+                    <div class="col-md-6 mb-4">
+                        {% if item.health_status == 'excellent' %}
+                            <div class="card h-100 border-success">
+                        {% elif item.health_status == 'good' %}
+                            <div class="card h-100 border-info">
+                        {% elif item.health_status == 'warning' %}
+                            <div class="card h-100 border-warning">
+                        {% else %}
+                            <div class="card h-100 border-danger">
+                        {% endif %}
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <strong>{{ item.project.name }}</strong>
+                                {% if item.health_status == 'excellent' %}
+                                    <span class="badge bg-success">Health: {{ item.health_score }}%</span>
+                                {% elif item.health_status == 'good' %}
+                                    <span class="badge bg-info">Health: {{ item.health_score }}%</span>
+                                {% elif item.health_status == 'warning' %}
+                                    <span class="badge bg-warning">Health: {{ item.health_score }}%</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Health: {{ item.health_score }}%</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body">
+                                <!-- Progress Bar -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span>Overall Progress</span>
+                                        <strong>{{ item.progress }}%</strong>
+                                    </div>
+                                    <div class="progress" style="height: 20px;">
+                                        {% if item.progress >= 80 %}
+                                            <div class="progress-bar bg-success" style="width: {{ item.progress }}%">{{ item.progress }}%</div>
+                                        {% elif item.progress >= 50 %}
+                                            <div class="progress-bar bg-info" style="width: {{ item.progress }}%">{{ item.progress }}%</div>
+                                        {% elif item.progress >= 25 %}
+                                            <div class="progress-bar bg-warning" style="width: {{ item.progress }}%">{{ item.progress }}%</div>
+                                        {% else %}
+                                            <div class="progress-bar bg-danger" style="width: {{ item.progress }}%">{{ item.progress }}%</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Task Statistics -->
+                                <div class="row text-center mb-3">
+                                    <div class="col-3">
+                                        <h6 class="text-primary">{{ item.total_tasks }}</h6>
+                                        <small>Total</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h6 class="text-success">{{ item.completed_tasks }}</h6>
+                                        <small>Done</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <h6 class="text-info">{{ item.in_progress_tasks }}</h6>
+                                        <small>In Progress</small>
+                                    </div>
+                                    <div class="col-3">
+                                        {% if item.overdue_tasks > 0 %}
+                                            <h6 class="text-danger">{{ item.overdue_tasks }}</h6>
+                                        {% else %}
+                                            <h6 class="text-muted">{{ item.overdue_tasks }}</h6>
+                                        {% endif %}
+                                        <small>Overdue</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Details -->
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Team Size:</small>
+                                        <strong>{{ item.team_size }} members</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Duration:</small>
+                                        <strong>{{ item.days_since_created }} days</strong>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Manager -->
+                                <div class="mt-2">
+                                    <small class="text-muted">Manager:</small>
+                                    <strong>{{ item.project.created_by.get_full_name|default:item.project.created_by.username }}</strong>
+                                </div>
+                                
+                                <!-- Quick Actions -->
+                                <div class="mt-3">
+                                    <a href="{% url 'tasks:project_detail' item.project.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                    {% if item.overdue_tasks > 0 %}
+                                        <span class="badge bg-danger ms-2">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ item.overdue_tasks }} overdue
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Active Projects</h5>
+                        <p class="text-muted">Create your first project to see progress tracking here.</p>
+                        <a href="{% url 'tasks:create_project' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create Project
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Logs & User Access Statistics -->
+<div class="row mb-4">
+    <!-- System Logs Overview -->
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>System Logs Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Total Log Entries</span>
+                    <span class="badge bg-primary">{{ log_stats.total_entries }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Recent Errors (24h)</span>
+                    <span class="badge bg-danger">{{ log_stats.recent_errors }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Login Attempts</span>
+                    <span class="badge bg-success">{{ log_stats.login_attempts }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>User Activities</span>
+                    <span class="badge bg-info">{{ log_stats.user_activities }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>System Events</span>
+                    <span class="badge bg-warning">{{ log_stats.system_events }}</span>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'dashboard:logs' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-file-alt me-2"></i>View Detailed Logs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Access Statistics -->
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-clock me-2"></i>User Access Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <h4 class="text-success">{{ system_stats.online_users }}</h4>
+                        <small>Currently Online</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h4 class="text-info">{{ system_stats.active_users_today }}</h4>
+                        <small>Active Today</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning">{{ system_stats.inactive_users }}</h4>
+                        <small>Inactive Users</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ system_stats.online_rate }}%</h4>
+                        <small>Online Rate</small>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" style="width: {{ system_stats.online_rate }}%"></div>
+                    </div>
+                    <small class="text-muted">Online users percentage</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification System & Recent Activity -->
+<div class="row mb-4">
+    <!-- Notification System -->
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Notification System</h5>
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+                    <i class="fas fa-plus me-1"></i>Send Notification
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Total Notifications</span>
+                    <span class="badge bg-primary">{{ notification_stats.total_notifications }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Global Notifications</span>
+                    <span class="badge bg-warning">{{ notification_stats.global_notifications }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Recent (7 days)</span>
+                    <span class="badge bg-info">{{ notification_stats.recent_notifications }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Unread</span>
+                    <span class="badge bg-danger">{{ notification_stats.unread_notifications }}</span>
+                </div>
+                
+                <!-- Recent Notifications List -->
+                <div class="mt-3">
+                    <h6 class="text-muted mb-2">Recent Notifications:</h6>
+                    {% if recent_notifications %}
+                        {% for notification in recent_notifications|slice:":3" %}
+                        <div class="d-flex justify-content-between align-items-start mb-2 p-2 border rounded">
+                            <div class="flex-grow-1">
+                                <strong class="d-block">{{ notification.title }}</strong>
+                                <small class="text-muted">{{ notification.message|truncatechars:50 }}</small>
+                                <br><small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                            </div>
+                            {% if notification.is_global %}
+                                <span class="badge bg-warning">Global</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No recent notifications</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity (7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <h4 class="text-success">{{ recent_activity.new_users }}</h4>
+                        <small>New Users</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h4 class="text-info">{{ recent_activity.new_projects }}</h4>
+                        <small>New Projects</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning">{{ recent_activity.new_tasks }}</h4>
+                        <small>New Tasks</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ recent_activity.completed_tasks }}</h4>
+                        <small>Completed Tasks</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Roles & Attendance Overview -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-tag me-2"></i>User Roles Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% for role, count in role_stats.items %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-capitalize">{{ role|title }}</span>
+                    <span class="badge bg-secondary">{{ count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-clock me-2"></i>Today's Attendance Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <h4 class="text-success">{{ today_attendance_overview.checked_in }}</h4>
+                        <small>Checked In</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h4 class="text-warning">{{ today_attendance_overview.late_arrivals }}</h4>
+                        <small>Late Arrivals</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-danger">{{ today_attendance_overview.absent }}</h4>
+                        <small>Absent</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-info">{{ today_attendance_overview.total_employees }}</h4>
+                        <small>Total Employees</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Performers & Project Progress -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performers (This Month)</h5>
+            </div>
+            <div class="card-body">
+                {% if top_performers %}
+                    {% for performer in top_performers %}
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                        <div>
+                            <strong>{{ performer.get_full_name|default:performer.username }}</strong>
+                            <small class="text-muted d-block">{{ performer.userprofile.position|default:"Employee" }}</small>
+                        </div>
+                        <span class="badge bg-success">{{ performer.completed_tasks_count }} tasks</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No completed tasks this month yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Project Progress</h5>
+            </div>
+            <div class="card-body">
+                {% if project_progress %}
+                    {% for item in project_progress %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong>{{ item.project.name }}</strong>
+                            <small>{{ item.completed_tasks }}/{{ item.total_tasks }}</small>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: {{ item.progress }}%">
+                                {{ item.progress }}%
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No projects found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Users Activity -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent User Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                <div class="row">
+                    {% for recent_user in recent_users %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-circle fa-2x text-muted me-3"></i>
+                            <div>
+                                <strong>{{ recent_user.get_full_name|default:recent_user.username }}</strong>
+                                <small class="text-muted d-block">
+                                    Last login: {{ recent_user.last_login|timesince }} ago
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                    <p class="text-muted text-center">No recent user activity.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Stats Cards (For all users) -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="fas fa-tasks fa-2x mb-3"></i>
+                <h3 class="display-4">{{ task_stats.total }}</h3>
+                <p class="mb-0">My Tasks</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="fas fa-play fa-2x mb-3"></i>
+                <h3 class="display-4">{{ task_stats.in_progress }}</h3>
+                <p class="mb-0">In Progress</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="fas fa-check fa-2x mb-3"></i>
+                <h3 class="display-4">{{ task_stats.completed }}</h3>
+                <p class="mb-0">Completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                <h3 class="display-4">{{ task_stats.overdue }}</h3>
+                <p class="mb-0">Overdue</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Today's Attendance -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>My Attendance Today</h5>
+            </div>
+            <div class="card-body attendance-card">
+                {% if today_attendance %}
+                    {% if today_attendance.check_in and today_attendance.check_out %}
+                        <div class="text-success">
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <h4>Work Complete</h4>
+                            <p>Check-in: {{ today_attendance.check_in|time:"H:i" }}</p>
+                            <p>Check-out: {{ today_attendance.check_out|time:"H:i" }}</p>
+                            <p>Hours worked: {{ today_attendance.worked_hours_display }}</p>
+                        </div>
+                    {% elif today_attendance.check_in %}
+                        <div class="text-primary">
+                            <i class="fas fa-play-circle fa-3x mb-3"></i>
+                            <h4>Currently Working</h4>
+                            <p>Check-in: {{ today_attendance.check_in|time:"H:i" }}</p>
+                            <form method="post" action="{% url 'attendance:check_out' %}" class="mt-3">
+                                {% csrf_token %}
+                                <button type="submit" class="btn check-out-btn">
+                                    <i class="fas fa-stop me-2"></i>Check Out
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-warning">
+                        <i class="fas fa-clock fa-3x mb-3"></i>
+                        <h4>Not Checked In</h4>
+                        <p>Start your work day</p>
+                        <form method="post" action="{% url 'attendance:check_in' %}" class="mt-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn check-in-btn">
+                                <i class="fas fa-play me-2"></i>Check In
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tasks -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>My Recent Tasks</h5>
+                <a href="{% url 'tasks:task_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if user_tasks %}
+                    {% for task in user_tasks %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div>
+                            <h6 class="mb-1">
+                                <a href="{% url 'tasks:task_detail' task.pk %}" class="text-decoration-none">
+                                    {{ task.title }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">{{ task.project.name }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span>
+                            {% if task.is_overdue %}
+                                <br><small class="text-danger">Overdue</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center">No tasks assigned yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manager/Admin Section -->
+{% if user.userprofile.is_manager or user.userprofile.is_admin %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i>Team Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-primary">{{ team_stats.total_projects }}</h4>
+                            <p class="text-muted">My Projects</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-info">{{ team_stats.total_team_tasks }}</h4>
+                            <p class="text-muted">Team Tasks</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-warning">{{ team_stats.pending_tasks }}</h4>
+                            <p class="text-muted">Pending</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <h4 class="text-success">{{ team_stats.completed_tasks }}</h4>
+                            <p class="text-muted">Completed</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if team_tasks %}
+                <h6 class="mt-4 mb-3">Recent Team Tasks</h6>
+                {% for task in team_tasks %}
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                    <div>
+                        <strong>{{ task.title }}</strong>
+                        <small class="text-muted d-block">Assigned to: {{ task.assigned_to.get_full_name }}</small>
+                    </div>
+                    <span class="badge {{ task.status_badge_class }}">{{ task.get_status_display }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Notifications -->
+{% if notifications %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Recent Notifications</h5>
+            </div>
+            <div class="card-body">
+                {% for notification in notifications %}
+                <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                    <div class="me-3">
+                        <span class="badge {{ notification.type_badge_class }}">{{ notification.get_notification_type_display }}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ notification.title }}</h6>
+                        <p class="mb-1 text-muted">{{ notification.message|truncatewords:20 }}</p>
+                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if is_admin_dashboard %}
+<!-- Admin Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Quick Admin Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'users:user_list' %}" class="btn btn-outline-primary btn-block w-100">
+                            <i class="fas fa-users me-2"></i>Manage Users
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'dashboard:logs' %}" class="btn btn-outline-success btn-block w-100">
+                            <i class="fas fa-file-alt me-2"></i>View System Logs
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'attendance:attendance_report' %}" class="btn btn-outline-info btn-block w-100">
+                            <i class="fas fa-chart-bar me-2"></i>Attendance Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="/admin/" class="btn btn-outline-warning btn-block w-100">
+                            <i class="fas fa-cog me-2"></i>Django Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update current time
+function updateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    document.getElementById('current-time').textContent = timeString;
+}
+
+// Update time every second
+setInterval(updateTime, 1000);
+updateTime();
+
+// Auto-refresh dashboard every 5 minutes
+setTimeout(function() {
+    location.reload();
+}, 300000);
+</script>
+
+<!-- Send Notification Modal -->
+{% if is_admin_dashboard %}
+<div class="modal fade" id="sendNotificationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2"></i>Send Notification
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="notificationForm">
+                    <div class="mb-3">
+                        <label for="notificationTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="notificationTitle" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notificationMessage" class="form-label">Message</label>
+                        <textarea class="form-control" id="notificationMessage" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isGlobalNotification">
+                            <label class="form-check-label" for="isGlobalNotification">
+                                Send to all users (Global notification)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="userSelection" style="display: none;">
+                        <label for="notificationRecipients" class="form-label">Select Recipients</label>
+                        <select class="form-select" id="notificationRecipients" multiple>
+                            <!-- Will be populated with users -->
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendNotification()">
+                    <i class="fas fa-paper-plane me-2"></i>Send Notification
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle user selection based on global notification checkbox
+document.getElementById('isGlobalNotification').addEventListener('change', function() {
+    const userSelection = document.getElementById('userSelection');
+    if (this.checked) {
+        userSelection.style.display = 'none';
+    } else {
+        userSelection.style.display = 'block';
+    }
+});
+
+function sendNotification() {
+    // TODO: Implement notification sending functionality
+    alert('Notification sending functionality will be implemented soon!');
+    document.getElementById('sendNotificationModal').querySelector('.btn-close').click();
+}
+</script>
+{% endif %}
+{% endblock %} 

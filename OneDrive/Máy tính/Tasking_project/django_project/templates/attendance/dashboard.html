@@ -1,0 +1,485 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Attendance Dashboard - Employee Task Management{% endblock %}
+
+{% block extra_css %}
+<style>
+.loading-spinner {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-working { background-color: #28a745; }
+.status-not-working { background-color: #dc3545; }
+.status-late { background-color: #ffc107; }
+
+.attendance-time {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.card-loading {
+    position: relative;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-0">
+            <i class="fas fa-clock me-2"></i>Attendance Dashboard
+        </h1>
+        <p class="text-muted">Track your work hours and attendance</p>
+    </div>
+    <div class="text-end">
+        <small class="text-muted">Current Time:</small><br>
+        <span id="current-time" class="fw-bold"></span>
+    </div>
+</div>
+
+<!-- Today's Attendance Status Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm card-loading" id="attendance-status-card">
+            <div class="loading-overlay" id="attendance-loading">
+                <div class="d-flex align-items-center">
+                    <div class="loading-spinner" style="display: block;"></div>
+                    <span>Processing...</span>
+                </div>
+            </div>
+            
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-day me-2"></i>
+                    Today's Attendance - {{ today|date:"l, F d, Y" }}
+                </h5>
+            </div>
+            <div class="card-body text-center" id="attendance-content">
+                {% if today_attendance %}
+                    {% if today_attendance.check_in and today_attendance.check_out %}
+                        <!-- Work Complete -->
+                        <div class="text-success">
+                            <span class="status-indicator status-working"></span>
+                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                            <h4>Work Complete for Today</h4>
+                            <div class="row mt-4">
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <strong>Check-in</strong><br>
+                                        <span class="attendance-time text-success">{{ today_attendance.check_in|time:"H:i" }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded">
+                                        <strong>Check-out</strong><br>
+                                        <span class="attendance-time text-danger">{{ today_attendance.check_out|time:"H:i" }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-primary text-white rounded">
+                                        <strong>Total Hours</strong><br>
+                                        <span class="attendance-time">{{ today_attendance.worked_hours_display }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if today_attendance.is_late %}
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Late arrival noted
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% elif today_attendance.check_in %}
+                        <!-- Currently Working -->
+                        <div class="text-primary">
+                            <span class="status-indicator status-working"></span>
+                            <i class="fas fa-play-circle fa-3x mb-3"></i>
+                            <h4>Currently Working</h4>
+                            <p class="mb-3">Started at: <span class="attendance-time">{{ today_attendance.check_in|time:"H:i" }}</span></p>
+                            
+                            {% if today_attendance.is_late %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Late arrival noted
+                                </div>
+                            {% endif %}
+                            
+                            <button type="button" class="btn btn-danger btn-lg" id="check-out-btn">
+                                <span class="loading-spinner"></span>
+                                <i class="fas fa-stop me-2"></i>Check Out
+                            </button>
+                        </div>
+                    {% else %}
+                        <!-- No Check-in Yet -->
+                        <div class="text-warning">
+                            <span class="status-indicator status-not-working"></span>
+                            <i class="fas fa-clock fa-3x mb-3"></i>
+                            <h4>Ready to Start Work</h4>
+                            <p class="mb-3">You haven't checked in today yet</p>
+                            
+                            <button type="button" class="btn btn-success btn-lg" id="check-in-btn">
+                                <span class="loading-spinner"></span>
+                                <i class="fas fa-play me-2"></i>Check In
+                            </button>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- No Attendance Record -->
+                    <div class="text-warning">
+                        <span class="status-indicator status-not-working"></span>
+                        <i class="fas fa-clock fa-3x mb-3"></i>
+                        <h4>Ready to Start Work</h4>
+                        <p class="mb-3">Start your work day by checking in</p>
+                        
+                        <button type="button" class="btn btn-success btn-lg" id="check-in-btn">
+                            <span class="loading-spinner"></span>
+                            <i class="fas fa-play me-2"></i>Check In
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Row -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                <h4>{{ monthly_stats.total_days }}</h4>
+                <p class="mb-0 text-muted">Days This Month</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4>{{ monthly_stats.present_days }}</h4>
+                <p class="mb-0 text-muted">Present Days</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-hourglass-half fa-2x text-info mb-2"></i>
+                <h4>{{ monthly_stats.total_hours|floatformat:1 }}</h4>
+                <p class="mb-0 text-muted">Total Hours</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Attendance -->
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Attendance</h5>
+                <a href="{% url 'attendance:history' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-list me-2"></i>View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_attendance %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attendance in recent_attendance %}
+                                <tr>
+                                    <td>{{ attendance.date|date:"M d" }}</td>
+                                    <td>
+                                        <span class="badge {{ attendance.status_badge_class }}">
+                                            {{ attendance.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if attendance.check_in %}
+                                            {{ attendance.check_in|time:"H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if attendance.check_out %}
+                                            {{ attendance.check_out|time:"H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if attendance.worked_hours %}
+                                            <strong>{{ attendance.worked_hours_display }}</strong>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No attendance records yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'attendance:history' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-history me-2"></i>Attendance History
+                    </a>
+                    {% if user.userprofile.is_manager or user.userprofile.is_admin %}
+                    <a href="{% url 'attendance:team_attendance' %}" class="btn btn-outline-info">
+                        <i class="fas fa-users me-2"></i>Team Attendance
+                    </a>
+                    {% endif %}
+                    {% if user.userprofile.is_admin %}
+                    <a href="{% url 'attendance:attendance_list' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-list me-2"></i>All Attendance
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Check in when you start work
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        Arrive on time to avoid late marks
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-sign-out-alt text-danger me-2"></i>
+                        Don't forget to check out when leaving
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        $('#current-time').text(timeString);
+    }
+    
+    setInterval(updateTime, 1000);
+    updateTime();
+    
+    // CSRF token for AJAX requests
+    function getCSRFToken() {
+        return $('[name=csrfmiddlewaretoken]').val() || 
+               $('meta[name=csrf-token]').attr('content') || 
+               document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    }
+    
+    // Show loading state
+    function showLoading(button) {
+        button.prop('disabled', true);
+        button.find('.loading-spinner').show();
+        $('#attendance-loading').show();
+    }
+    
+    // Hide loading state
+    function hideLoading(button) {
+        button.prop('disabled', false);
+        button.find('.loading-spinner').hide();
+        $('#attendance-loading').hide();
+    }
+    
+    // Show notification
+    function showNotification(message, type = 'info') {
+        const alertClass = type === 'error' ? 'alert-danger' : 
+                          type === 'success' ? 'alert-success' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-info';
+        
+        const alert = $(`
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `);
+        
+        // Insert at top of page
+        alert.prependTo('.container').hide().slideDown();
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            alert.slideUp(() => alert.remove());
+        }, 5000);
+    }
+    
+    // Check-in handler
+    $('#check-in-btn').on('click', function(e) {
+        e.preventDefault();
+        const button = $(this);
+        
+        showLoading(button);
+        
+        $.ajax({
+            url: '{% url "attendance:check_in" %}',
+            type: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            },
+            success: function(response) {
+                hideLoading(button);
+                
+                if (response.success) {
+                    showNotification(response.message, 'success');
+                    
+                    // Refresh page after short delay to show updated status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(response.message, 'warning');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideLoading(button);
+                showNotification('Network error. Please try again.', 'error');
+                console.error('Check-in error:', error);
+            }
+        });
+    });
+    
+    // Check-out handler
+    $('#check-out-btn').on('click', function(e) {
+        e.preventDefault();
+        const button = $(this);
+        
+        showLoading(button);
+        
+        $.ajax({
+            url: '{% url "attendance:check_out" %}',
+            type: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCSRFToken()
+            },
+            success: function(response) {
+                hideLoading(button);
+                
+                if (response.success) {
+                    showNotification(response.message, 'success');
+                    
+                    // Refresh page after short delay to show updated status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showNotification(response.message, 'warning');
+                }
+            },
+            error: function(xhr, status, error) {
+                hideLoading(button);
+                showNotification('Network error. Please try again.', 'error');
+                console.error('Check-out error:', error);
+            }
+        });
+    });
+    
+    // Auto-refresh status every 30 seconds
+    setInterval(function() {
+        $.ajax({
+            url: '{% url "attendance:attendance_status" %}',
+            type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update button states based on current status
+                    const hasCheckIn = response.has_attendance && response.check_in;
+                    const hasCheckOut = response.has_attendance && response.check_out;
+                    
+                    $('#check-in-btn').toggle(response.can_check_in);
+                    $('#check-out-btn').toggle(response.can_check_out);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('Status check failed:', error);
+            }
+        });
+    }, 30000); // 30 seconds
+});
+</script>
+{% endblock %} 

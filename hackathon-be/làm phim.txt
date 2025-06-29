@@ -1,0 +1,82 @@
+1. Phân Tích & Thiết Kế (Planning & Design)
+Xác định yêu cầu chức năng: Xem phim, đăng nhập, tìm kiếm, phân loại phim, v.v.
+
+Vẽ sơ đồ use case, user flow (luồng người dùng).
+
+Thiết kế wireframe, mockup giao diện (UI/UX).
+
+Lên danh sách tính năng ưu tiên (MVP/Feature list).
+
+2. Chuẩn Bị Backend
+Thiết kế cơ sở dữ liệu (phim, user, thể loại, tập phim, lịch sử xem, bình luận, v.v.).
+
+Xây dựng API (RESTful hoặc GraphQL) cho các chức năng:
+
+Đăng ký/Đăng nhập/Quản lý user.
+
+Danh sách phim, chi tiết phim.
+
+Tìm kiếm phim.
+
+Xem phim (stream video).
+
+Bình luận, đánh giá phim.
+
+Quản trị nội dung (CRUD phim, thể loại…).
+
+Cài đặt bảo mật, xác thực (JWT, OAuth2 hoặc tương đương).
+
+Upload/Quản lý file video (thường dùng cloud hoặc server riêng).
+
+3. Xây Dựng Frontend
+Xây dựng giao diện chính (ReactJS, VueJS, Angular, hoặc thuần HTML/CSS/JS).
+
+Trang chủ (list phim nổi bật/mới).
+
+Trang chi tiết phim (thông tin, player, comment).
+
+Player phát video (custom hoặc nhúng).
+
+Trang đăng nhập/đăng ký.
+
+Tìm kiếm phim.
+
+Trang quản lý cá nhân (history, danh sách phim đã xem, yêu thích).
+
+Trang quản trị (nếu có).
+
+Tích hợp API backend.
+
+Responsive (hiển thị tốt trên mobile, tablet).
+
+4. Chức Năng Nâng Cao (Optional/Advanced)
+Đề xuất phim dựa vào lịch sử xem (recommendation).
+
+Lọc phim theo thể loại, quốc gia, năm phát hành.
+
+Tối ưu SEO (tối ưu Google search).
+
+Đăng nhập qua Google, Facebook.
+
+Xem phim chất lượng cao, chọn phụ đề, tốc độ phát, v.v.
+
+Tích hợp quảng cáo (nếu cần).
+
+5. Kiểm Thử & Triển Khai
+Viết test case, kiểm thử các tính năng (manual/automation).
+
+Kiểm tra hiệu năng, tối ưu load video.
+
+Triển khai lên server (VPS, cloud như AWS, Azure…).
+
+Cấu hình domain, SSL.
+
+Giám sát, log lỗi, bảo trì.
+
+6. Bảo Trì & Cập Nhật
+Fix bug, cập nhật tính năng mới.
+
+Cập nhật nội dung phim.
+
+Backup dữ liệu định kỳ.
+

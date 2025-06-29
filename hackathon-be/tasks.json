@@ -1,0 +1,344 @@
+[
+  {
+    "taskId": "TASK01",
+    "taskName": "Xác định yêu cầu chức năng",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần phân tích kỹ các yêu cầu từ người dùng và stakeholder, đảm bảo tính khả thi.",
+    "mainSkill": "Phân tích yêu cầu, Communication",
+    "workload": "Medium",
+    "priorityReason": 5
+  },
+  {
+    "taskId": "TASK02",
+    "taskName": "Vẽ sơ đồ use case, user flow",
+    "taskType": "Medium",
+    "difficultyExplanation": "Yêu cầu hiểu biết về UX/UI và kỹ năng vẽ sơ đồ.",
+    "mainSkill": "UX/UI Design",
+    "workload": "Medium",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK03",
+    "taskName": "Thiết kế wireframe, mockup giao diện (UI/UX)",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần có mắt thẩm mỹ và kinh nghiệm thiết kế giao diện người dùng.",
+    "mainSkill": "UX/UI Design, Figma/Sketch",
+    "workload": "Large",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK04",
+    "taskName": "Lên danh sách tính năng ưu tiên (MVP/Feature list)",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cân nhắc tính khả thi, nguồn lực và tầm nhìn sản phẩm.",
+    "mainSkill": "Product Management, Phân tích yêu cầu",
+    "workload": "Small",
+    "priorityReason": 5
+  },
+  {
+    "taskId": "TASK05",
+    "taskName": "Thiết kế cơ sở dữ liệu",
+    "taskType": "High",
+    "difficultyExplanation": "Cần kiến thức sâu về thiết kế database, tối ưu hóa truy vấn.",
+    "mainSkill": "SQL, Database Design",
+    "workload": "Large",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK06",
+    "taskName": "Xây dựng API (RESTful hoặc GraphQL)",
+    "taskType": "High",
+    "difficultyExplanation": "Yêu cầu kiến thức sâu về thiết kế API và ngôn ngữ lập trình backend.",
+    "mainSkill": "Backend (NodeJS, Python, Java...), REST/GraphQL, API Design",
+    "workload": "Large",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK07",
+    "taskName": "Đăng ký/Đăng nhập/Quản lý user",
+    "taskType": "Medium",
+    "difficultyExplanation": "Khá cơ bản, nhưng cần đảm bảo bảo mật.",
+    "mainSkill": "Backend, Authentication (JWT, OAuth2)",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK08",
+    "taskName": "Danh sách phim, chi tiết phim",
+    "taskType": "Medium",
+    "difficultyExplanation": "Tương đối đơn giản nếu API được thiết kế tốt.",
+    "mainSkill": "Backend",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK09",
+    "taskName": "Tìm kiếm phim",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần tối ưu thuật toán tìm kiếm để đảm bảo hiệu năng.",
+    "mainSkill": "Backend, Algorithm",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK10",
+    "taskName": "Xem phim (stream video)",
+    "taskType": "High",
+    "difficultyExplanation": "Khó khăn về xử lý video streaming, tối ưu băng thông.",
+    "mainSkill": "Backend, Video Streaming (CDN, Server), AWS/Azure",
+    "workload": "Large",
+    "priorityReason": 2
+  },
+  {
+    "taskId": "TASK11",
+    "taskName": "Bình luận, đánh giá phim",
+    "taskType": "Medium",
+    "difficultyExplanation": "Tương đối đơn giản, cần chú ý xử lý comment spam.",
+    "mainSkill": "Backend, Database",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK12",
+    "taskName": "Quản trị nội dung (CRUD phim, thể loại…)",
+    "taskType": "Medium",
+    "difficultyExplanation": "CRUD cơ bản nhưng cần đảm bảo tính bảo mật.",
+    "mainSkill": "Backend, Database",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK13",
+    "taskName": "Cài đặt bảo mật, xác thực",
+    "taskType": "High",
+    "difficultyExplanation": "Yêu cầu kiến thức sâu về bảo mật và các phương thức xác thực.",
+    "mainSkill": "Backend, Security (JWT, OAuth2), Encryption",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK14",
+    "taskName": "Upload/Quản lý file video",
+    "taskType": "High",
+    "difficultyExplanation": "Cần cân nhắc sử dụng dịch vụ cloud hoặc server riêng, tối ưu dung lượng.",
+    "mainSkill": "Backend, AWS/Azure/Cloud Storage",
+    "workload": "Large",
+    "priorityReason": 2
+  },
+  {
+    "taskId": "TASK15",
+    "taskName": "Xây dựng giao diện chính (ReactJS, VueJS, Angular)",
+    "taskType": "High",
+    "difficultyExplanation": "Yêu cầu kinh nghiệm về framework frontend và kiến trúc ứng dụng.",
+    "mainSkill": "ReactJS/VueJS/Angular, HTML/CSS/JS",
+    "workload": "Large",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK16",
+    "taskName": "Trang chủ (list phim nổi bật/mới)",
+    "taskType": "Medium",
+    "difficultyExplanation": "Tương đối đơn giản, cần thiết kế giao diện bắt mắt.",
+    "mainSkill": "Frontend, ReactJS/VueJS/Angular",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK17",
+    "taskName": "Trang chi tiết phim (thông tin, player, comment)",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần tích hợp player video và xử lý comment.",
+    "mainSkill": "Frontend, ReactJS/VueJS/Angular",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK18",
+    "taskName": "Player phát video",
+    "taskType": "Medium",
+    "difficultyExplanation": "Có thể sử dụng player có sẵn hoặc custom.",
+    "mainSkill": "Frontend, Video Player Integration",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK19",
+    "taskName": "Trang đăng nhập/đăng ký",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần tích hợp với API authentication.",
+    "mainSkill": "Frontend, ReactJS/VueJS/Angular",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK20",
+    "taskName": "Tìm kiếm phim (Frontend)",
+    "taskType": "Low",
+    "difficultyExplanation": "Gọi API tìm kiếm từ backend.",
+    "mainSkill": "Frontend, ReactJS/VueJS/Angular",
+    "workload": "Small",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK21",
+    "taskName": "Trang quản lý cá nhân",
+    "taskType": "Medium",
+    "difficultyExplanation": "Hiển thị lịch sử xem phim, danh sách yêu thích.",
+    "mainSkill": "Frontend, ReactJS/VueJS/Angular",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK22",
+    "taskName": "Trang quản trị (nếu có)",
+    "taskType": "Medium",
+    "difficultyExplanation": "Phụ thuộc vào yêu cầu chức năng.",
+    "mainSkill": "Frontend, ReactJS/VueJS/Angular",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK23",
+    "taskName": "Tích hợp API backend",
+    "taskType": "High",
+    "difficultyExplanation": "Cần kiến thức về API và xử lý lỗi.",
+    "mainSkill": "Frontend, Backend, API Integration",
+    "workload": "Large",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK24",
+    "taskName": "Responsive",
+    "taskType": "Medium",
+    "difficultyExplanation": "Thiết kế giao diện đáp ứng trên các thiết bị khác nhau.",
+    "mainSkill": "Frontend, CSS, Responsive Design",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK25",
+    "taskName": "Đề xuất phim",
+    "taskType": "High",
+    "difficultyExplanation": "Yêu cầu thuật toán đề xuất phim dựa trên lịch sử xem.",
+    "mainSkill": "Backend, Machine Learning (Optional), Algorithm",
+    "workload": "Large",
+    "priorityReason": 2
+  },
+  {
+    "taskId": "TASK26",
+    "taskName": "Lọc phim",
+    "taskType": "Medium",
+    "difficultyExplanation": "Lọc phim theo thể loại, quốc gia, năm phát hành.",
+    "mainSkill": "Frontend, Backend",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK27",
+    "taskName": "Tối ưu SEO",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần kiến thức về SEO và tối ưu website.",
+    "mainSkill": "SEO, Frontend",
+    "workload": "Medium",
+    "priorityReason": 2
+  },
+  {
+    "taskId": "TASK28",
+    "taskName": "Đăng nhập qua Google, Facebook",
+    "taskType": "Medium",
+    "difficultyExplanation": "Tích hợp với các dịch vụ xác thực bên thứ ba.",
+    "mainSkill": "Backend, OAuth 2.0",
+    "workload": "Medium",
+    "priorityReason": 2
+  },
+  {
+    "taskId": "TASK29",
+    "taskName": "Xem phim chất lượng cao, chọn phụ đề, tốc độ phát",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần xử lý video streaming hiệu quả.",
+    "mainSkill": "Frontend, Backend, Video Player",
+    "workload": "Medium",
+    "priorityReason": 2
+  },
+  {
+    "taskId": "TASK30",
+    "taskName": "Tích hợp quảng cáo",
+    "taskType": "Medium",
+    "difficultyExplanation": "Tích hợp SDK của nhà cung cấp quảng cáo.",
+    "mainSkill": "Frontend, Ad Integration",
+    "workload": "Medium",
+    "priorityReason": 1
+  },
+  {
+    "taskId": "TASK31",
+    "taskName": "Viết test case, kiểm thử các tính năng",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần kiến thức về test case và các kỹ thuật kiểm thử.",
+    "mainSkill": "Testing, Manual Testing, Automation Testing",
+    "workload": "Large",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK32",
+    "taskName": "Kiểm tra hiệu năng, tối ưu load video",
+    "taskType": "High",
+    "difficultyExplanation": "Yêu cầu kiến thức về tối ưu hiệu năng và phân tích log.",
+    "mainSkill": "Performance Testing, Backend, Video Optimization",
+    "workload": "Large",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK33",
+    "taskName": "Triển khai lên server",
+    "taskType": "High",
+    "difficultyExplanation": "Cần kiến thức về quản trị server và cấu hình.",
+    "mainSkill": "AWS/Azure/VPS, Server Management, DevOps",
+    "workload": "Large",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK34",
+    "taskName": "Cấu hình domain, SSL",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cấu hình domain và SSL certificate.",
+    "mainSkill": "Server Management, DevOps",
+    "workload": "Small",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK35",
+    "taskName": "Giám sát, log lỗi, bảo trì",
+    "taskType": "Medium",
+    "difficultyExplanation": "Cần giám sát hoạt động của website và xử lý lỗi.",
+    "mainSkill": "Monitoring, Logging, DevOps",
+    "workload": "Medium",
+    "priorityReason": 4
+  },
+  {
+    "taskId": "TASK36",
+    "taskName": "Fix bug, cập nhật tính năng mới",
+    "taskType": "Medium",
+    "difficultyExplanation": "Xử lý lỗi và cập nhật tính năng mới.",
+    "mainSkill": "Backend, Frontend, DevOps",
+    "workload": "Medium",
+    "priorityReason": 3
+  },
+  {
+    "taskId": "TASK37",
+    "taskName": "Cập nhật nội dung phim",
+    "taskType": "Low",
+    "difficultyExplanation": "Thêm mới hoặc cập nhật thông tin phim.",
+    "mainSkill": "Backend",
+    "workload": "Small",
+    "priorityReason": 2
+  },
+  {
+    "taskId": "TASK38",
+    "taskName": "Backup dữ liệu định kỳ",
+    "taskType": "Low",
+    "difficultyExplanation": "Sao lưu dữ liệu định kỳ để đảm bảo an toàn dữ liệu.",
+    "mainSkill": "DevOps, Database",
+    "workload": "Small",
+    "priorityReason": 2
+  }
+]

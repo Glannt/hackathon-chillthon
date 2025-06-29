@@ -1,0 +1,102 @@
+[
+  {
+    "Id": "1",
+    "Name": "A",
+    "Department": "Backend",
+    "Position": "Senior Backend Developer",
+    "Experience": "5 years",
+    "ProjectsDone": "12",
+    "AvgTaskCompletion": "1.5 ngày (Medium)",
+    "DeadlineMisses": "2"
+  },
+  {
+    "Id": "2",
+    "Name": "B",
+    "Department": "Frontend",
+    "Position": "Junior Frontend Developer",
+    "Experience": "1 years",
+    "ProjectsDone": "4",
+    "AvgTaskCompletion": "2 ngày (Easy)",
+    "DeadlineMisses": "0"
+  },
+  {
+    "Id": "3",
+    "Name": "C",
+    "Department": "Mobile",
+    "Position": "Mid-level Flutter Developer",
+    "Experience": "3 years",
+    "ProjectsDone": "6",
+    "AvgTaskCompletion": "2.5 ngày (Medium)",
+    "DeadlineMisses": "1"
+  },
+  {
+    "Id": "4",
+    "Name": "D",
+    "Department": "Backend",
+    "Position": "Junior Backend Developer",
+    "Experience": "1.5 years",
+    "ProjectsDone": "5",
+    "AvgTaskCompletion": "3 ngày (Hard)",
+    "DeadlineMisses": "3"
+  },
+  {
+    "Id": "5",
+    "Name": "E",
+    "Department": "AI",
+    "Position": "Senior AI Engineer",
+    "Experience": "6 years",
+    "ProjectsDone": "10",
+    "AvgTaskCompletion": "2 ngày (Hard)",
+    "DeadlineMisses": "1"
+  },
+  {
+    "Id": "6",
+    "Name": "F",
+    "Department": "Frontend",
+    "Position": "Mid-level React Developer",
+    "Experience": "2.5 years",
+    "ProjectsDone": "7",
+    "AvgTaskCompletion": "1.8 ngày (Medium)",
+    "DeadlineMisses": "0"
+  },
+  {
+    "Id": "7",
+    "Name": "G",
+    "Department": "DevOps",
+    "Position": "Senior DevOps Engineer",
+    "Experience": "7 years",
+    "ProjectsDone": "15",
+    "AvgTaskCompletion": "1.2 ngày (Medium)",
+    "DeadlineMisses": "2"
+  },
+  {
+    "Id": "8",
+    "Name": "H",
+    "Department": "Tester",
+    "Position": "QA Engineer",
+    "Experience": "2 years",
+    "ProjectsDone": "8",
+    "AvgTaskCompletion": "2.2 ngày (Easy)",
+    "DeadlineMisses": "0"
+  },
+  {
+    "Id": "9",
+    "Name": "I",
+    "Department": "AI",
+    "Position": "Junior Data Scientist",
+    "Experience": "1 years",
+    "ProjectsDone": "3",
+    "AvgTaskCompletion": "3.5 ngày (Hard)",
+    "DeadlineMisses": "2"
+  },
+  {
+    "Id": "10",
+    "Name": "J",
+    "Department": "Backend",
+    "Position": "Mid-level Backend Developer",
+    "Experience": "4 years",
+    "ProjectsDone": "9",
+    "AvgTaskCompletion": "2 ngày (Medium)",
+    "DeadlineMisses": "1"
+  }
+]
